@@ -6,12 +6,12 @@ import { getAuth } from "firebase/auth";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  "apiKey": "AIzaSyCak-4DjsKp9DE6NWu0wQQyV4k8g6_XgiY",
+  "apiKey": "AIzaSyCkQa4_b9KfqzHVPF9ARc40ty7UjUlU2Sg",
   "authDomain": "modern-chyrp.firebaseapp.com",
   "projectId": "modern-chyrp",
-  "storageBucket": "modern-chyrp.appspot.com",
+  "storageBucket": "modern-chyrp.firebasestorage.app",
   "messagingSenderId": "380240154321",
-  "appId": "1:380240154321:web:82d1063fa55e45cc4dfff0"
+  "appId": "1:380240154321:web:198f17a57c8cc1044dfff0"
 };
 
 // Initialize Firebase
