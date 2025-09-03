@@ -43,7 +43,7 @@ type PostFormValues = z.infer<typeof postFormSchema>;
 export function PostForm() {
   const { toast } = useToast();
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState<"Publish" | "Draft" | false>(false);
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [isSuggestingTitles, setIsSuggestingTitles] = useState(false);
   const [isGeneratingMeta, setIsGeneratingMeta] = useState(false);
@@ -175,7 +175,7 @@ export function PostForm() {
   }
   
   async function onSubmit(data: PostFormValues, status: 'Published' | 'Draft') {
-    setIsSubmitting(true);
+    setIsSubmitting(status);
     try {
       await createPost({
         title: data.title,
@@ -293,18 +293,18 @@ export function PostForm() {
                 <Button 
                   type="button" 
                   onClick={form.handleSubmit(data => onSubmit(data, 'Published'))} 
-                  disabled={isSubmitting}
+                  disabled={!!isSubmitting}
                 >
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSubmitting === 'Published' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Publish Post
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={form.handleSubmit(data => onSubmit(data, 'Draft'))} 
-                  disabled={isSubmitting}
+                  disabled={!!isSubmitting}
                 >
-                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   {isSubmitting === 'Draft' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save as Draft
                 </Button>
               </CardContent>
@@ -375,5 +375,3 @@ export function PostForm() {
     </Form>
   );
 }
-
-    
