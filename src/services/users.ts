@@ -71,3 +71,19 @@ export const updateUserRole = async (uid: string, role: UserRole): Promise<void>
         throw new Error(`Failed to update user role: ${error.message}`);
     }
 };
+
+export const updateUserProfileInDb = async (uid: string, profileData: { displayName?: string, photoURL?: string }): Promise<void> => {
+    try {
+        const userRef = doc(db, 'users', uid);
+        const dataToUpdate: any = {};
+        if(profileData.displayName) dataToUpdate.displayName = profileData.displayName;
+        if(profileData.photoURL) dataToUpdate.photoURL = profileData.photoURL;
+
+        if(Object.keys(dataToUpdate).length > 0) {
+            await updateDoc(userRef, dataToUpdate);
+        }
+    } catch (error: any) {
+        console.error('🚨 Error in updateUserProfileInDb:', error);
+        throw new Error(`Failed to update user profile in database: ${error.message}`);
+    }
+}

@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { onAuthStateChanged, User, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup, updatePassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { createUserProfile, getUserProfile, UserProfile } from '@/services/users';
+import { createUserProfile, getUserProfile, UserProfile, updateUserProfileInDb } from '@/services/users';
 
 interface AppUser extends User {
     role?: UserProfile['role'];
@@ -90,9 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateUserProfile = async (profile: { displayName?: string, photoURL?: string }) => {
     if (auth.currentUser) {
         await updateProfile(auth.currentUser, profile);
-        // Also update in our users collection
-        // TODO: Add an updateUserProfile function in services/users.ts
-        setUser(auth.currentUser as AppUser);
+        await updateUserProfileInDb(auth.currentUser.uid, profile);
+        // Manually update user state to reflect changes immediately
+        setUser(prevUser => prevUser ? { ...prevUser, ...profile, displayName: profile.displayName ?? prevUser.displayName, photoURL: profile.photoURL ?? prevUser.photoURL } : null);
     } else {
         throw new Error("No user is signed in.");
     }
