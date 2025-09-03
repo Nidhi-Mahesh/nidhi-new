@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Sparkles, Image as ImageIcon, ShieldAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 const postFormSchema = z.object({
@@ -63,6 +63,17 @@ export function PostForm({ post }: PostFormProps) {
   
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
 
+  // Determine if the user has permission to edit.
+  // This is true if it's a new post, or if the user is an Admin/Editor,
+  // or if the user is the author of the existing post.
+  const hasEditPermissions = (() => {
+    if (!user) return false; // Not logged in
+    if (!post) return true; // It's a new post, anyone logged in can create
+    if (user.role === 'Admin' || user.role === 'Editor') return true; // Admins/Editors can edit anything
+    if (user.role === 'Author' && post.authorId === user.uid) return true; // Authors can edit their own posts
+    return false; // All other cases are denied
+  })();
+  
   const form = useForm<PostFormValues>({
     resolver: zodResolver(postFormSchema),
     defaultValues: {
@@ -71,9 +82,9 @@ export function PostForm({ post }: PostFormProps) {
       metaDescription: "",
       tags: "",
     },
+    // Disable the form if the user doesn't have permission
+    disabled: !hasEditPermissions,
   });
-  
-  const hasEditPermissions = !post || !user ? true : user.role === 'Admin' || user.role === 'Editor' || post.author === user.displayName;
   
   // Expose the ref for the Textarea
   const contentRef = (el: HTMLTextAreaElement) => {
@@ -248,6 +259,7 @@ export function PostForm({ post }: PostFormProps) {
       title: data.title,
       content: data.content || '',
       author: post?.author || user.displayName || user.email || "Anonymous",
+      authorId: post?.authorId || user.uid,
       status: status,
       metaDescription: data.metaDescription,
       tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
@@ -284,6 +296,15 @@ export function PostForm({ post }: PostFormProps) {
 
   return (
     <>
+    {!hasEditPermissions && post && (
+        <Alert variant="destructive" className="mb-8">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Permission Denied</AlertTitle>
+            <AlertDescription>
+            You do not have permission to edit this post because you are not the original author.
+            </AlertDescription>
+        </Alert>
+    )}
     <Form {...form}>
       <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -301,7 +322,7 @@ export function PostForm({ post }: PostFormProps) {
                     <FormItem>
                       <FormLabel>Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your amazing post title" {...field} disabled={!hasEditPermissions} />
+                        <Input placeholder="Your amazing post title" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -331,7 +352,6 @@ export function PostForm({ post }: PostFormProps) {
                           className="min-h-[400px]"
                           {...field}
                           ref={contentRef}
-                          disabled={!hasEditPermissions}
                         />
                       </FormControl>
                       <FormDescription>
@@ -363,7 +383,7 @@ export function PostForm({ post }: PostFormProps) {
                         </Button>
                       </div>
                       <FormControl>
-                        <Textarea placeholder="A brief summary for search engines." {...field} disabled={!hasEditPermissions} />
+                        <Textarea placeholder="A brief summary for search engines." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -397,14 +417,6 @@ export function PostForm({ post }: PostFormProps) {
                    {isSubmitting === 'Draft' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {post?.id ? 'Save Changes' : 'Save as Draft'}
                 </Button>
-                 {!hasEditPermissions && (
-                    <Alert variant="destructive" className="mt-2">
-                      <ShieldAlert className="h-4 w-4" />
-                      <AlertDescription>
-                        You do not have permission to edit this post.
-                      </AlertDescription>
-                    </Alert>
-                  )}
               </CardContent>
             </Card>
 
@@ -456,7 +468,7 @@ export function PostForm({ post }: PostFormProps) {
                         </Button>
                       </div>
                       <FormControl>
-                        <Input placeholder="Tech, AI, Writing" {...field} disabled={!hasEditPermissions} />
+                        <Input placeholder="Tech, AI, Writing" {...field} />
                       </FormControl>
                       <FormDescription>
                         Comma-separated tags.
@@ -479,5 +491,3 @@ export function PostForm({ post }: PostFormProps) {
     </>
   );
 }
-
-    

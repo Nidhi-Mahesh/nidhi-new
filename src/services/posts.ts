@@ -7,6 +7,7 @@ export interface Post {
   title: string;
   content: string;
   author: string;
+  authorId: string;
   status: 'Published' | 'Draft' | 'Review';
   createdAt: any;
   updatedAt?: any;

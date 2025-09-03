@@ -86,10 +86,12 @@ export default function PostsPage() {
   
   const canEditOrDelete = (post: Post) => {
     if (!user) return false;
+    // Admins and Editors can edit/delete any post
     if (user.role === 'Admin' || user.role === 'Editor') {
       return true;
     }
-    if (user.role === 'Author' && post.author === user.displayName) {
+    // Authors can only edit/delete their own posts
+    if (user.role === 'Author' && post.authorId === user.uid) {
       return true;
     }
     return false;
@@ -220,5 +222,3 @@ export default function PostsPage() {
     </>
   );
 }
-
-    
