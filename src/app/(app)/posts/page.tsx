@@ -5,9 +5,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { posts } from "@/lib/mock-data";
+import { getPosts, Post } from "@/services/posts";
 
-export default function PostsPage() {
+function formatTimestamp(timestamp: any) {
+  if (timestamp && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate().toLocaleDateString();
+  }
+  // Fallback for cases where it might already be a string or other type
+  return new Date(timestamp).toLocaleDateString();
+}
+
+export default async function PostsPage() {
+  const posts: Post[] = await getPosts();
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -53,7 +63,7 @@ export default function PostsPage() {
                       {post.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{post.createdAt}</TableCell>
+                  <TableCell className="hidden md:table-cell">{formatTimestamp(post.createdAt)}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
