@@ -57,7 +57,10 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold font-headline">Modern Chyrp</h1>
-        <nav>
+        <nav className="flex items-center gap-4">
+          <Button asChild variant="link">
+            <Link href="/blog">Blog</Link>
+          </Button>
           <Button asChild variant="ghost">
             <Link href="/login">Log In</Link>
           </Button>
@@ -83,7 +86,7 @@ export default function Home() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="#">View Demo</Link>
+                <Link href="/blog">View The Blog</Link>
               </Button>
             </div>
           </div>
