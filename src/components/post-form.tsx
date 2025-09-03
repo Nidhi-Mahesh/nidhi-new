@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,8 +10,9 @@ import { generateDraftFromHeadline } from "@/ai/flows/ai-generate-draft-from-hea
 import { suggestPostTitles } from "@/ai/flows/ai-suggest-post-titles";
 import { generateMetaDescription } from "@/ai/flows/ai-generate-meta-description";
 import { suggestTagsAndCategories } from "@/ai/flows/ai-suggest-tags-and-categories";
-import { createPost } from "@/services/posts";
+import { createPost, updatePost, Post } from "@/services/posts";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/auth-provider";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,9 +41,14 @@ const postFormSchema = z.object({
 
 type PostFormValues = z.infer<typeof postFormSchema>;
 
-export function PostForm() {
+interface PostFormProps {
+  post?: Post;
+}
+
+export function PostForm({ post }: PostFormProps) {
   const { toast } = useToast();
   const router = useRouter();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState<"Publish" | "Draft" | false>(false);
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [isSuggestingTitles, setIsSuggestingTitles] = useState(false);
@@ -60,6 +66,17 @@ export function PostForm() {
       tags: "",
     },
   });
+
+  useEffect(() => {
+    if (post) {
+      form.reset({
+        title: post.title,
+        content: post.content || '',
+        metaDescription: post.metaDescription || '',
+        tags: post.tags?.join(', ') || '',
+      });
+    }
+  }, [post, form]);
 
   async function handleGenerateDraft() {
     const title = form.getValues("title");
@@ -175,21 +192,40 @@ export function PostForm() {
   }
   
   async function onSubmit(data: PostFormValues, status: 'Published' | 'Draft') {
+    if (!user) {
+      toast({ title: "Authentication Error", description: "You must be logged in to create or update a post.", variant: "destructive" });
+      return;
+    }
+
     setIsSubmitting(status);
+    
+    const postData = {
+      title: data.title,
+      content: data.content || '',
+      author: user.displayName || user.email || "Anonymous",
+      status: status,
+      metaDescription: data.metaDescription,
+      tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+    };
+
     try {
-      await createPost({
-        title: data.title,
-        content: data.content || '',
-        author: "Jane Doe", // Hardcoded for now
-        status: status,
-        metaDescription: data.metaDescription,
-        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
-      });
-      toast({
-        title: `Post ${status === 'Published' ? 'Published' : 'Saved'}`,
-        description: "Your post has been successfully saved.",
-      });
+      if (post?.id) {
+        // Update existing post
+        await updatePost(post.id, postData);
+        toast({
+          title: "Post Updated",
+          description: "Your post has been successfully updated.",
+        });
+      } else {
+        // Create new post
+        await createPost(postData);
+        toast({
+          title: `Post ${status === 'Published' ? 'Published' : 'Saved'}`,
+          description: "Your post has been successfully saved.",
+        });
+      }
       router.push('/posts');
+      router.refresh();
     } catch (error) {
        toast({
         title: "Error",
@@ -296,7 +332,7 @@ export function PostForm() {
                   disabled={!!isSubmitting}
                 >
                   {isSubmitting === 'Published' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Publish Post
+                  {post?.id ? 'Update & Publish' : 'Publish Post'}
                 </Button>
                 <Button 
                   type="button" 
@@ -305,7 +341,7 @@ export function PostForm() {
                   disabled={!!isSubmitting}
                 >
                    {isSubmitting === 'Draft' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save as Draft
+                  {post?.id ? 'Save Changes' : 'Save as Draft'}
                 </Button>
               </CardContent>
             </Card>

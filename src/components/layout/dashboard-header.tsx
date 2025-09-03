@@ -1,26 +1,10 @@
+
 "use client"
 
 import Link from "next/link"
-import {
-  Bell,
-  Home,
-  LineChart,
-  Package,
-  Package2,
-  Search,
-  ShoppingCart,
-  Users,
-} from "lucide-react"
+import { Search } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,8 +16,22 @@ import {
 import { Input } from "@/components/ui/input"
 import { SidebarTrigger } from "../ui/sidebar"
 import Image from "next/image"
+import { useAuth } from "@/context/auth-provider"
+import { useRouter } from "next/navigation"
 
 export function DashboardHeader() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error("Failed to log out", error);
+    }
+  }
+
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
       <SidebarTrigger className="md:hidden" />
@@ -54,7 +52,7 @@ export function DashboardHeader() {
           <Button variant="secondary" size="icon" className="rounded-full">
             <div className="relative w-8 h-8">
               <Image
-                src="https://picsum.photos/100/100"
+                src={user?.photoURL || "https://picsum.photos/100/100"}
                 alt="User avatar"
                 fill
                 className="rounded-full object-cover"
@@ -67,11 +65,13 @@ export function DashboardHeader() {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/settings">Settings</Link>
+          </DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/">Logout</Link>
+          <DropdownMenuItem onClick={handleLogout}>
+            Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

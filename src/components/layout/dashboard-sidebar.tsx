@@ -20,9 +20,9 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
-import { Button } from "../ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import Logo from "../logo"
+import { useAuth } from "@/context/auth-provider"
 
 const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -37,6 +37,17 @@ const bottomMenuItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const { user } = useAuth();
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[names.length - 1][0]}`;
+    }
+    return name[0];
+  }
+
 
   return (
     <>
@@ -87,12 +98,12 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <div className="flex items-center gap-3 p-2">
             <Avatar>
-                <AvatarImage src="https://picsum.photos/100/100" data-ai-hint="user avatar" alt="@shadcn" />
-                <AvatarFallback>U</AvatarFallback>
+                <AvatarImage src={user?.photoURL || undefined} data-ai-hint="user avatar" alt="User avatar" />
+                <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
             </Avatar>
             <div className="overflow-hidden">
-                <p className="font-semibold truncate">Jane Doe</p>
-                <p className="text-xs text-muted-foreground truncate">jane.doe@example.com</p>
+                <p className="font-semibold truncate">{user?.displayName || "Anonymous"}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
         </div>
       </SidebarFooter>
