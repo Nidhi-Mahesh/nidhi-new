@@ -52,6 +52,10 @@ const toDate = (timestamp: any): Date => {
   if (typeof timestamp === 'string') {
     return new Date(timestamp);
   }
+  // Fallback for serialized data that is already a string date
+  if (timestamp && timestamp.seconds) {
+    return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+  }
   return new Date();
 };
 
@@ -77,10 +81,15 @@ export function CommentsSection({ post }: CommentsSectionProps) {
     );
 
     const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
-        const fetchedComments = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as Comment));
+        const fetchedComments = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                // Serialize timestamp to string to avoid client component errors
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+            } as Comment
+        });
         setComments(fetchedComments);
         setIsLoading(false);
     }, (error) => {
@@ -99,6 +108,7 @@ export function CommentsSection({ post }: CommentsSectionProps) {
       return;
     }
 
+    form.control.disabled = true;
     try {
       await addComment({
         postId: post.id,
@@ -110,6 +120,8 @@ export function CommentsSection({ post }: CommentsSectionProps) {
       form.reset();
     } catch (error) {
       toast({ title: 'Error', description: 'Failed to post comment.', variant: 'destructive' });
+    } finally {
+        form.control.disabled = false;
     }
   };
 
