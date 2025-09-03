@@ -9,6 +9,7 @@ import { BarChart, MessageSquare, Newspaper, Users, ArrowRight } from "lucide-re
 import { getPosts, Post } from '@/services/posts';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/context/auth-provider';
 
 function formatTimestamp(timestamp: any) {
   if (!timestamp) {
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchPosts() {
@@ -55,6 +57,13 @@ export default function DashboardPage() {
     { title: "Comments", value: "8,901", icon: <MessageSquare className="h-6 w-6 text-muted-foreground" />, description: "Feature coming soon" },
     { title: "Total Views", value: "2.3M", icon: <BarChart className="h-6 w-6 text-muted-foreground" />, description: "Feature coming soon" },
   ]
+
+  const canEditPost = (post: Post) => {
+    if (!user) return false;
+    if (user.role === 'Admin' || user.role === 'Editor') return true;
+    if (user.role === 'Author' && post.authorId === user.uid) return true;
+    return false;
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -105,12 +114,14 @@ export default function DashboardPage() {
                           <p className="text-sm font-medium leading-none truncate">{post.title}</p>
                           <p className="text-sm text-muted-foreground">{formatTimestamp(post.createdAt)}</p>
                         </div>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/posts/${post.id}/edit`}>
-                            Edit
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
+                        {canEditPost(post) && (
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/posts/${post.id}/edit`}>
+                              Edit
+                              <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                          </Button>
+                        )}
                       </div>
                     ))}
                 </div>
