@@ -9,6 +9,7 @@ import {
   Image as ImageIcon,
   Users,
   Settings,
+  Bot,
 } from "lucide-react"
 
 import {
@@ -25,10 +26,10 @@ import Logo from "../logo"
 import { useAuth } from "@/context/auth-provider"
 
 const menuItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/posts", label: "Posts", icon: Newspaper },
-  { href: "/media", label: "Media", icon: ImageIcon },
-  { href: "/users", label: "Users", icon: Users },
+  { href: "/dashboard", label: "Dashboard", icon: Home, adminOnly: false },
+  { href: "/posts", label: "Posts", icon: Newspaper, adminOnly: false },
+  { href: "/media", label: "Media", icon: ImageIcon, adminOnly: false },
+  { href: "/users", label: "Users", icon: Users, adminOnly: true },
 ]
 
 const bottomMenuItems = [
@@ -59,20 +60,25 @@ export function DashboardSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
-                tooltip={item.label}
-              >
-                <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {menuItems.map((item) => {
+            if (item.adminOnly && user?.role !== 'Admin') {
+              return null;
+            }
+            return (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+                  tooltip={item.label}
+                >
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarSeparator />

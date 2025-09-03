@@ -5,9 +5,14 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { onAuthStateChanged, User, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup, updatePassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
+import { createUserProfile, getUserProfile, UserProfile } from '@/services/users';
+
+interface AppUser extends User {
+    role?: UserProfile['role'];
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, displayName: string) => Promise<any>;
@@ -20,23 +25,32 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Fetch user profile on auth state change
+        const userProfile = await getUserProfile(firebaseUser.uid);
+        const appUser = { ...firebaseUser, role: userProfile?.role };
+        setUser(appUser);
+
+        // Redirect if on an auth page
+        if (pathname === '/login' || pathname === '/signup') {
+          router.push('/dashboard');
+        }
+      } else {
+        setUser(null);
+         // Redirect to login if not on a public page
+        const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/';
+        if (!isAuthPage) {
+          router.push('/login');
+        }
+      }
       setLoading(false);
-      
-      const isAuthPage = pathname === '/login' || pathname === '/signup';
-      if (!user && !isAuthPage) {
-        router.push('/login');
-      }
-      if (user && isAuthPage) {
-        router.push('/dashboard');
-      }
     });
 
     return () => unsubscribe();
@@ -48,8 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const signup = async (email: string, pass: string, displayName: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    if (userCredential.user) {
-        await updateProfile(userCredential.user, { displayName });
+    const firebaseUser = userCredential.user;
+    if (firebaseUser) {
+        await updateProfile(firebaseUser, { displayName });
+        // The onAuthStateChanged listener will handle fetching the profile
+        await createUserProfile(firebaseUser.uid, firebaseUser.email!, displayName, firebaseUser.photoURL);
     }
     return userCredential;
   };
@@ -58,16 +75,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return signOut(auth);
   };
 
-  const loginWithGoogle = () => {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+  const loginWithGoogle = async () => {
+    const provider = new new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    const firebaseUser = userCredential.user;
+     if (firebaseUser) {
+        // Check if a profile exists, if not create one
+        // The onAuthStateChanged listener will handle fetching the profile
+        await createUserProfile(firebaseUser.uid, firebaseUser.email!, firebaseUser.displayName!, firebaseUser.photoURL);
+    }
+    return userCredential;
   }
 
   const updateUserProfile = async (profile: { displayName?: string, photoURL?: string }) => {
     if (auth.currentUser) {
         await updateProfile(auth.currentUser, profile);
-        // Manually update the user state to reflect changes immediately
-        setUser(auth.currentUser);
+        // Also update in our users collection
+        // TODO: Add an updateUserProfile function in services/users.ts
+        setUser(auth.currentUser as AppUser);
     } else {
         throw new Error("No user is signed in.");
     }
