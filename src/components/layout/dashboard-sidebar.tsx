@@ -29,8 +29,11 @@ const menuItems = [
   { href: "/posts", label: "Posts", icon: Newspaper },
   { href: "/media", label: "Media", icon: ImageIcon },
   { href: "/users", label: "Users", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
 ]
+
+const bottomMenuItems = [
+    { href: "/settings", label: "Settings", icon: Settings },
+];
 
 export function DashboardSidebar() {
   const pathname = usePathname()
@@ -49,7 +52,7 @@ export function DashboardSidebar() {
             <SidebarMenuItem key={item.label}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname.startsWith(item.href)}
+                isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
                 tooltip={item.label}
               >
                 <Link href={item.href}>
@@ -62,10 +65,29 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarSeparator />
+      <SidebarContent className="flex-none">
+        <SidebarMenu>
+            {bottomMenuItems.map((item) => (
+                <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith(item.href)}
+                    tooltip={item.label}
+                >
+                    <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                    </Link>
+                </SidebarMenuButton>
+                </SidebarMenuItem>
+            ))}
+        </SidebarMenu>
+      </SidebarContent>
+      <SidebarSeparator />
       <SidebarFooter>
         <div className="flex items-center gap-3 p-2">
             <Avatar>
-                <AvatarImage src="https://picsum.photos/100/100" alt="@shadcn" />
+                <AvatarImage src="https://picsum.photos/100/100" data-ai-hint="user avatar" alt="@shadcn" />
                 <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <div className="overflow-hidden">
