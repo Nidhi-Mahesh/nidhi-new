@@ -183,7 +183,7 @@ export function PostForm() {
         author: "Jane Doe", // Hardcoded for now
         status: status,
         metaDescription: data.metaDescription,
-        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
+        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
       });
       toast({
         title: `Post ${status === 'Published' ? 'Published' : 'Saved'}`,

@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
 export interface Post {
   id?: string;
@@ -15,7 +15,7 @@ export interface Post {
 
 const postsCollection = collection(db, 'posts');
 
-export const createPost = async (post: Omit<Post, 'id' | 'createdAt'>): Promise<string> => {
+export const createPost = async (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   const docRef = await addDoc(postsCollection, {
     ...post,
     createdAt: serverTimestamp(),
@@ -23,6 +23,7 @@ export const createPost = async (post: Omit<Post, 'id' | 'createdAt'>): Promise<
   });
   return docRef.id;
 };
+
 
 export const getPosts = async (): Promise<Post[]> => {
   const snapshot = await getDocs(postsCollection);
