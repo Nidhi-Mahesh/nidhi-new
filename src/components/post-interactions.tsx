@@ -35,7 +35,11 @@ export function PostInteractions({ post: initialPost }: PostInteractionsProps) {
 
   const handleInteraction = async (type: 'like' | 'dislike') => {
     if (!user) {
-      toast({ title: "Authentication required", description: "You must be logged in to interact.", variant: "destructive" });
+      toast({ 
+          title: "Authentication required", 
+          description: "Please log in or create an account to interact with posts.",
+          variant: "destructive" 
+      });
       return;
     }
     if (!post.id) return;

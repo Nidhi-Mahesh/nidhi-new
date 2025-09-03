@@ -19,6 +19,7 @@ import { Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import Link from 'next/link';
 
 
 const commentFormSchema = z.object({
@@ -106,7 +107,7 @@ export function CommentsSection({ post }: CommentsSectionProps) {
         <CardTitle>Comments</CardTitle>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden flex flex-col gap-4">
-        {user && (
+        {user ? (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-4">
               <Avatar className="h-9 w-9 mt-1">
@@ -133,6 +134,12 @@ export function CommentsSection({ post }: CommentsSectionProps) {
               </div>
             </form>
           </Form>
+        ) : (
+            <div className="text-center p-4 border rounded-lg bg-muted">
+                <p className="text-sm text-muted-foreground">
+                    <Link href="/login" className="text-primary underline">Log in</Link> or <Link href="/signup" className="text-primary underline">Sign up</Link> to leave a comment.
+                </p>
+            </div>
         )}
         <ScrollArea className="flex-grow pr-4 -mr-4">
             <div className="space-y-6">

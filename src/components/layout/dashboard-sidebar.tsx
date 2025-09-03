@@ -9,7 +9,7 @@ import {
   Image as ImageIcon,
   Users,
   Settings,
-  Bot,
+  BookOpen,
 } from "lucide-react"
 
 import {
@@ -30,6 +30,7 @@ const menuItems = [
   { href: "/posts", label: "Posts", icon: Newspaper, adminOnly: false },
   { href: "/media", label: "Media", icon: ImageIcon, adminOnly: false },
   { href: "/users", label: "Users", icon: Users, adminOnly: true },
+  { href: "/blog", label: "View Blog", icon: BookOpen, adminOnly: false, target: "_blank" },
 ]
 
 const bottomMenuItems = [
@@ -71,7 +72,7 @@ export function DashboardSidebar() {
                   isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
                   tooltip={item.label}
                 >
-                  <Link href={item.href}>
+                  <Link href={item.href} target={item.target}>
                     <item.icon />
                     <span>{item.label}</span>
                   </Link>
