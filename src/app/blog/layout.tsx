@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/logo";
+import { Button } from "@/components/ui/button";
 
 export default function BlogLayout({
   children,
@@ -14,10 +15,16 @@ export default function BlogLayout({
                 <Logo />
                 <h1 className="text-2xl font-bold font-headline">Modern Chyrp</h1>
             </Link>
-            <nav>
+            <nav className="flex items-center gap-2">
                 <Link href="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground">
                     Blog
                 </Link>
+                <Button variant="ghost" asChild>
+                  <Link href="/login">Log In</Link>
+                </Button>
+                 <Button asChild>
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
             </nav>
         </div>
       </header>

@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {getPosts} from '@/services/posts';
+import {getPostsForChatbot} from '@/services/chatbot';
 import {z} from 'genkit';
 
 const WebsiteChatbotInputSchema = z.object({
@@ -57,10 +57,7 @@ const websiteChatbotFlow = ai.defineFlow(
     outputSchema: WebsiteChatbotOutputSchema,
   },
   async input => {
-    const posts = await getPosts();
-    
-    // Simple serialization of posts for the prompt
-    const postContext = posts.map(p => ({ title: p.title, content: p.content }));
+    const postContext = await getPostsForChatbot();
 
     const {output} = await prompt({
         query: input.query,

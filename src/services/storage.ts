@@ -1,6 +1,6 @@
 
 import { storage } from '@/lib/firebase';
-import { ref, uploadBytesResumable, getDownloadURL, listAll, getMetadata } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, listAll, getMetadata, updateMetadata } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface StorageFile {
@@ -10,6 +10,7 @@ export interface StorageFile {
   size: number;
   contentType: string;
   createdAt: string;
+  alt?: string;
 }
 
 export const uploadFile = (
@@ -67,7 +68,8 @@ export const getFiles = async (): Promise<StorageFile[]> => {
                 path: itemRef.fullPath,
                 size: metadata.size,
                 contentType: metadata.contentType || 'application/octet-stream',
-                createdAt: metadata.timeCreated
+                createdAt: metadata.timeCreated,
+                alt: metadata.customMetadata?.alt || '',
             };
         });
 
@@ -81,5 +83,19 @@ export const getFiles = async (): Promise<StorageFile[]> => {
     } catch (error: any) {
         console.error("Error getting files: ", error);
         throw new Error(`Failed to fetch files: ${error.message}`);
+    }
+}
+
+export const updateFileAltText = async (filePath: string, altText: string): Promise<void> => {
+    try {
+        const fileRef = ref(storage, filePath);
+        await updateMetadata(fileRef, {
+            customMetadata: {
+                alt: altText,
+            }
+        });
+    } catch (error: any) {
+        console.error("Error updating alt text: ", error);
+        throw new Error(`Failed to update alt text: ${error.message}`);
     }
 }
