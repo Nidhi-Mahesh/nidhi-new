@@ -1,3 +1,4 @@
+
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
@@ -17,7 +18,12 @@ const postsCollection = collection(db, 'posts');
 
 export const createPost = async (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   const docRef = await addDoc(postsCollection, {
-    ...post,
+    title: post.title,
+    content: post.content || '',
+    author: post.author,
+    status: post.status,
+    metaDescription: post.metaDescription || '',
+    tags: post.tags || [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

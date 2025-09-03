@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +9,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { getPosts, Post } from "@/services/posts";
 
 function formatTimestamp(timestamp: any) {
+  if (!timestamp) {
+    return 'N/A';
+  }
   if (timestamp && typeof timestamp.toDate === 'function') {
     return timestamp.toDate().toLocaleDateString();
   }
   // Fallback for cases where it might already be a string or other type
-  return new Date(timestamp).toLocaleDateString();
+  try {
+    return new Date(timestamp).toLocaleDateString();
+  } catch (error) {
+    return 'Invalid Date';
+  }
 }
 
 export default async function PostsPage() {
