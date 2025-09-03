@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { collection, onSnapshot, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 
@@ -76,8 +76,7 @@ export function CommentsSection({ post }: CommentsSectionProps) {
 
     const commentsQuery = query(
       collection(db, "comments"),
-      where('postId', '==', post.id),
-      orderBy('createdAt', 'desc')
+      where('postId', '==', post.id)
     );
 
     const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
@@ -86,10 +85,13 @@ export function CommentsSection({ post }: CommentsSectionProps) {
             return {
                 id: doc.id,
                 ...data,
-                // Serialize timestamp to string to avoid client component errors
                 createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
             } as Comment
         });
+        
+        // Sort comments by date on the client side
+        fetchedComments.sort((a, b) => toDate(b.createdAt).getTime() - toDate(a.createdAt).getTime());
+
         setComments(fetchedComments);
         setIsLoading(false);
     }, (error) => {
