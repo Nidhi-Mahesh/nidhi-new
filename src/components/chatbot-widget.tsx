@@ -11,9 +11,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Loader2, Sparkles, MessageSquare, X } from 'lucide-react';
 import { useAuth } from '@/context/auth-provider';
+import { cn } from '@/lib/utils';
 
 const chatFormSchema = z.object({
   query: z.string().min(1, 'Message cannot be empty'),
@@ -26,10 +27,11 @@ interface Message {
   text: string;
 }
 
-export default function ChatPage() {
+export function ChatbotWidget() {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<ChatFormValues>({
     resolver: zodResolver(chatFormSchema),
@@ -43,7 +45,7 @@ export default function ChatPage() {
       return `${names[0][0]}${names[names.length - 1][0]}`;
     }
     return name[0];
-  }
+  };
 
   const onSubmit = async (data: ChatFormValues) => {
     setIsLoading(true);
@@ -62,20 +64,44 @@ export default function ChatPage() {
       setIsLoading(false);
     }
   };
+  
+  if (!isOpen) {
+      return (
+        <Button 
+            onClick={() => setIsOpen(true)} 
+            className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg z-50"
+        >
+            <MessageSquare className="h-6 w-6" />
+        </Button>
+      )
+  }
 
   return (
-    <div className="flex-1 p-4 md:p-8 pt-6 flex justify-center">
-      <Card className="w-full max-w-3xl h-full flex flex-col">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="text-primary" />
-            AI Website Assistant
-          </CardTitle>
-          <CardDescription>Ask me anything about the content on this website.</CardDescription>
+    <Card className={cn(
+        "fixed bottom-4 right-4 z-50 w-[90vw] max-w-sm h-[70vh] flex flex-col transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0"
+        )}>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="text-primary" />
+                    AI Assistant
+                </CardTitle>
+                <CardDescription>Ask about the website content.</CardDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+                <X className="h-5 w-5" />
+            </Button>
         </CardHeader>
         <CardContent className="flex-grow overflow-hidden">
             <ScrollArea className="h-full pr-4">
                 <div className="space-y-4">
+                {messages.length === 0 && (
+                    <div className="text-center text-muted-foreground p-8">
+                        <Sparkles className="mx-auto h-10 w-10 mb-4 text-primary/50" />
+                        <p>Ask me anything!</p>
+                    </div>
+                )}
                 {messages.map((message, index) => (
                     <div key={index} className={`flex items-start gap-3 ${message.sender === 'user' ? 'justify-end' : ''}`}>
                     {message.sender === 'bot' && (
@@ -83,16 +109,15 @@ export default function ChatPage() {
                             <AvatarFallback><Sparkles /></AvatarFallback>
                         </Avatar>
                     )}
-                    <div className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                    <div className={`rounded-lg px-4 py-2 max-w-[80%] text-sm ${
                         message.sender === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted'
                     }`}>
-                        <p className="text-sm">{message.text}</p>
+                        <p>{message.text}</p>
                     </div>
                      {message.sender === 'user' && (
                         <Avatar className="h-8 w-8">
-                             <AvatarImage src={user?.photoURL || undefined} data-ai-hint="user avatar" alt="User avatar" />
                              <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                         </Avatar>
                     )}
@@ -133,6 +158,5 @@ export default function ChatPage() {
           </Form>
         </CardFooter>
       </Card>
-    </div>
   );
 }
