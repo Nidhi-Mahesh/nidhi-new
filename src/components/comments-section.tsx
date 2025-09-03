@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 
@@ -43,6 +43,18 @@ function getInitials(name: string | null | undefined) {
     }
     return 'U';
 }
+
+// Helper to handle various date formats
+const toDate = (timestamp: any): Date => {
+  if (timestamp instanceof Timestamp) {
+    return timestamp.toDate();
+  }
+  if (typeof timestamp === 'string') {
+    return new Date(timestamp);
+  }
+  return new Date();
+};
+
 
 export function CommentsSection({ post }: CommentsSectionProps) {
   const { user } = useAuth();
@@ -156,7 +168,7 @@ export function CommentsSection({ post }: CommentsSectionProps) {
                         <div className="flex items-center gap-2">
                             <p className="font-semibold text-sm">{comment.authorName}</p>
                             <p className="text-xs text-muted-foreground">
-                                {comment.createdAt ? formatDistanceToNow(comment.createdAt.toDate(), { addSuffix: true }) : 'just now'}
+                                {comment.createdAt ? formatDistanceToNow(toDate(comment.createdAt), { addSuffix: true }) : 'just now'}
                             </p>
                         </div>
                         <p className="text-sm">{comment.content}</p>

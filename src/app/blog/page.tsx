@@ -22,6 +22,15 @@ function getInitials(name: string | null | undefined) {
     return 'U';
 }
 
+// Helper function to convert Firestore Timestamps to serializable format
+const serializePost = (post: Post): Post => {
+  return {
+    ...post,
+    createdAt: post.createdAt?.toDate ? post.createdAt.toDate().toISOString() : post.createdAt,
+    updatedAt: post.updatedAt?.toDate ? post.updatedAt.toDate().toISOString() : post.updatedAt,
+  };
+};
+
 export default async function BlogPage() {
   const allPosts = await getPosts();
   const allUsers = await getUsers();
@@ -34,6 +43,8 @@ export default async function BlogPage() {
       {publishedPosts.length > 0 ? (
         publishedPosts.map(post => {
           const authorProfile = usersMap.get(post.authorId);
+          const serializablePost = serializePost(post);
+          
           return (
             <section key={post.id} className="h-full w-full snap-start flex items-center justify-center relative p-4 md:p-8">
               <div className="max-w-7xl w-full h-full flex flex-row items-start gap-8">
@@ -51,7 +62,7 @@ export default async function BlogPage() {
                               </Avatar>
                               <div>
                                 <p className="text-lg font-semibold group-hover:text-primary">{authorProfile?.displayName || 'Unknown Author'}</p>
-                                <p className="text-sm text-muted-foreground">Posted on {new Date(post.createdAt.seconds * 1000).toLocaleDateString()}</p>
+                                <p className="text-sm text-muted-foreground">Posted on {new Date(serializablePost.createdAt).toLocaleDateString()}</p>
                               </div>
                           </Link>
                          </div>
@@ -80,8 +91,8 @@ export default async function BlogPage() {
 
                 {/* Right Sidebar for Interactions and Comments */}
                 <div className="w-full max-w-md flex-shrink-0 h-full flex flex-col gap-4">
-                    <PostInteractions post={post} />
-                    <CommentsSection post={post} />
+                    <PostInteractions post={serializablePost} />
+                    <CommentsSection post={serializablePost} />
                 </div>
 
               </div>
