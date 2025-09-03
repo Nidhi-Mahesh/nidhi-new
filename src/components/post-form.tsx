@@ -1,13 +1,16 @@
+
 "use client";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { generateDraftFromHeadline } from "@/ai/flows/ai-generate-draft-from-headline";
 import { suggestPostTitles } from "@/ai/flows/ai-suggest-post-titles";
 import { generateMetaDescription } from "@/ai/flows/ai-generate-meta-description";
 import { suggestTagsAndCategories } from "@/ai/flows/ai-suggest-tags-and-categories";
+import { createPost } from "@/services/posts";
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
@@ -25,7 +28,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Badge } from "./ui/badge";
 
 const postFormSchema = z.object({
   title: z.string().min(2, {
@@ -40,6 +42,8 @@ type PostFormValues = z.infer<typeof postFormSchema>;
 
 export function PostForm() {
   const { toast } = useToast();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [isSuggestingTitles, setIsSuggestingTitles] = useState(false);
   const [isGeneratingMeta, setIsGeneratingMeta] = useState(false);
@@ -100,7 +104,6 @@ export function PostForm() {
     try {
       const result = await suggestPostTitles({ content });
       setSuggestedTitles(result.titles);
-      // This will trigger the dialog via its open state which should be managed. For now, let's just open it via a trigger.
     } catch (error) {
        toast({
         title: "Error",
@@ -171,16 +174,36 @@ export function PostForm() {
     }
   }
   
-  function onSubmit(data: PostFormValues) {
-    toast({
-      title: "Post Submitted",
-      description: <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4"><code className="text-white">{JSON.stringify(data, null, 2)}</code></pre>,
-    });
+  async function onSubmit(data: PostFormValues, status: 'Published' | 'Draft') {
+    setIsSubmitting(true);
+    try {
+      await createPost({
+        title: data.title,
+        content: data.content || '',
+        author: "Jane Doe", // Hardcoded for now
+        status: status,
+        metaDescription: data.metaDescription,
+        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
+      });
+      toast({
+        title: `Post ${status === 'Published' ? 'Published' : 'Saved'}`,
+        description: "Your post has been successfully saved.",
+      });
+      router.push('/posts');
+    } catch (error) {
+       toast({
+        title: "Error",
+        description: "Failed to save post.",
+        variant: "destructive",
+      });
+    } finally {
+       setIsSubmitting(false);
+    }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <Card>
@@ -267,8 +290,23 @@ export function PostForm() {
                 <CardTitle>Actions</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
-                <Button type="submit">Publish Post</Button>
-                <Button variant="outline">Save as Draft</Button>
+                <Button 
+                  type="button" 
+                  onClick={form.handleSubmit(data => onSubmit(data, 'Published'))} 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Publish Post
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={form.handleSubmit(data => onSubmit(data, 'Draft'))} 
+                  disabled={isSubmitting}
+                >
+                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save as Draft
+                </Button>
               </CardContent>
             </Card>
 
@@ -337,3 +375,5 @@ export function PostForm() {
     </Form>
   );
 }
+
+    
