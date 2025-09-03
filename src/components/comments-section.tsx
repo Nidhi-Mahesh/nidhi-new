@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/context/auth-provider';
-import { addComment, getCommentsForPost, Comment } from '@/services/comments';
+import { addComment, Comment } from '@/services/comments';
 import { Post } from '@/services/posts';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -104,14 +104,14 @@ export function CommentsSection({ post }: CommentsSectionProps) {
   return (
     <Card className="flex-grow flex flex-col h-full">
       <CardHeader>
-        <CardTitle>Comments</CardTitle>
+        <CardTitle>Comments ({post.commentCount || 0})</CardTitle>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden flex flex-col gap-4">
         {user ? (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-4">
               <Avatar className="h-9 w-9 mt-1">
-                <AvatarImage src={user.photoURL || undefined} />
+                <AvatarImage src={user.photoURL || undefined} data-ai-hint="user avatar" />
                 <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
               </Avatar>
               <div className="flex-grow space-y-2">
@@ -149,7 +149,7 @@ export function CommentsSection({ post }: CommentsSectionProps) {
                 comments.map((comment) => (
                 <div key={comment.id} className="flex items-start gap-4">
                     <Avatar className="h-9 w-9">
-                        <AvatarImage src={comment.authorAvatar || undefined} />
+                        <AvatarImage src={comment.authorAvatar || undefined} data-ai-hint="user avatar" />
                         <AvatarFallback>{getInitials(comment.authorName)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-grow">
