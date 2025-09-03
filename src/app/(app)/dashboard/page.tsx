@@ -5,12 +5,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { BarChart, MessageSquare, Newspaper, Users, ArrowRight, Heart } from "lucide-react";
+import { BarChart, MessageSquare, Newspaper, Users, ArrowRight, Edit } from "lucide-react";
 import { getPosts, Post } from '@/services/posts';
+import { getUsers, UserProfile } from '@/services/users';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/context/auth-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { formatDistanceToNow } from 'date-fns';
 
 function formatTimestamp(timestamp: any) {
   if (!timestamp) {
@@ -26,31 +28,74 @@ function formatTimestamp(timestamp: any) {
   }
 }
 
+function formatRelativeTime(timestamp: any) {
+  if (!timestamp) return 'some time ago';
+  try {
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch (error) {
+    return 'a while ago';
+  }
+}
+
+
+function getInitials(name: string | null | undefined) {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1 && names[0] && names[names.length - 1]) {
+      return `${names[0][0]}${names[names.length - 1][0]}`;
+    }
+    if(name && name.length > 0) {
+      return name[0]
+    }
+    return 'U';
+}
+
 export default function DashboardPage() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
-    async function fetchPosts() {
+    async function fetchData() {
       try {
-        const fetchedPosts = await getPosts();
+        const [fetchedPosts, fetchedUsers] = await Promise.all([
+            getPosts(),
+            getUsers()
+        ]);
         setPosts(fetchedPosts);
+        setUsers(fetchedUsers);
       } catch (error) {
         toast({
-          title: "Error fetching posts",
-          description: "Could not retrieve posts for the dashboard.",
+          title: "Error fetching data",
+          description: "Could not retrieve data for the dashboard.",
           variant: "destructive",
         });
       } finally {
         setIsLoading(false);
       }
     }
-    fetchPosts();
+    fetchData();
   }, [toast]);
   
   const recentPosts = posts.slice(0, 5);
+  const usersMap = new Map(users.map(u => [u.uid, u]));
+
+  const recentActivity = posts.slice(0, 5).map(post => {
+      const author = usersMap.get(post.authorId);
+      const isUpdate = post.updatedAt && post.createdAt && post.updatedAt.seconds !== post.createdAt.seconds;
+      return {
+          id: post.id,
+          type: isUpdate ? 'update' : 'create',
+          user: author?.displayName || post.author,
+          avatar: author?.photoURL,
+          text: `${isUpdate ? 'updated' : 'created'} the post "${post.title}"`,
+          time: formatRelativeTime(post.updatedAt || post.createdAt),
+      }
+  });
+
 
   const stats = [
     { title: "Total Posts", value: isLoading ? <Skeleton className="h-6 w-16" /> : posts.length.toString(), icon: <Newspaper className="h-6 w-6 text-muted-foreground" /> },
@@ -65,14 +110,6 @@ export default function DashboardPage() {
     if (user.role === 'Author' && post.authorId === user.uid) return true;
     return false;
   }
-  
-  const recentActivity = [
-    { type: 'comment', user: 'Olivia Martin', avatar: 'https://picsum.photos/100/100?random=1', text: 'commented on "Getting Started with Next.js 14"', time: '5m ago' },
-    { type: 'like', user: 'Jackson Lee', avatar: 'https://picsum.photos/100/100?random=2', text: 'liked "AI in Modern Web Development"', time: '12m ago' },
-    { type: 'comment', user: 'Isabella Nguyen', avatar: 'https://picsum.photos/100/100?random=3', text: 'commented on "A Guide to Tailwind CSS"', time: '30m ago' },
-    { type: 'like', user: 'William Kim', avatar: 'https://picsum.photos/100/100?random=4', text: 'liked "The Future of Blogging Platforms"', time: '1h ago' },
-     { type: 'like', user: 'Sophia Garcia', avatar: 'https://picsum.photos/100/100?random=5', text: 'liked "Getting Started with Next.js 14"', time: '2h ago' },
-  ];
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -97,27 +134,41 @@ export default function DashboardPage() {
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-             <CardDescription>Recent comments and likes will be displayed here.</CardDescription>
+             <CardDescription>A live feed of recent post creations and updates.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start">
-                    <Avatar className="h-9 w-9 mr-4">
-                      <AvatarImage src={activity.avatar} alt="Avatar" data-ai-hint="user avatar" />
-                      <AvatarFallback>{activity.user.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="text-sm">
-                        <span className="font-semibold">{activity.user}</span>
-                        {' '}{activity.text}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+             {isLoading ? (
+                 <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-4">
+                      <Skeleton className="h-9 w-9 rounded-full" />
+                      <div className="space-y-2">
+                         <Skeleton className="h-4 w-[250px]" />
+                         <Skeleton className="h-3 w-[150px]" />
+                      </div>
                     </div>
-                     {activity.type === 'comment' ? <MessageSquare className="h-5 w-5 text-muted-foreground" /> : <Heart className="h-5 w-5 text-destructive" />}
-                  </div>
-                ))}
-            </div>
+                  ))}
+                </div>
+             ) : (
+                <div className="space-y-6">
+                    {recentActivity.map((activity) => (
+                      <div key={activity.id} className="flex items-start">
+                        <Avatar className="h-9 w-9 mr-4">
+                          <AvatarImage src={activity.avatar || undefined} alt="Avatar" data-ai-hint="user avatar" />
+                          <AvatarFallback>{getInitials(activity.user)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="text-sm">
+                            <span className="font-semibold">{activity.user}</span>
+                            {' '}{activity.text}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{activity.time}</p>
+                        </div>
+                         {activity.type === 'create' ? <Newspaper className="h-5 w-5 text-muted-foreground" /> : <Edit className="h-5 w-5 text-muted-foreground" />}
+                      </div>
+                    ))}
+                </div>
+             )}
           </CardContent>
         </Card>
         <Card className="col-span-3">
