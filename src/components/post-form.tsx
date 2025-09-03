@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +13,7 @@ import { suggestTagsAndCategories } from "@/ai/flows/ai-suggest-tags-and-categor
 import { createPost, updatePost, Post } from "@/services/posts";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth-provider";
+import { MediaModal } from "@/components/media-modal";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Image as ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 
 const postFormSchema = z.object({
@@ -54,6 +55,9 @@ export function PostForm({ post }: PostFormProps) {
   const [isSuggestingTitles, setIsSuggestingTitles] = useState(false);
   const [isGeneratingMeta, setIsGeneratingMeta] = useState(false);
   const [isSuggestingTags, setIsSuggestingTags] = useState(false);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  
+  const contentTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
 
@@ -66,6 +70,12 @@ export function PostForm({ post }: PostFormProps) {
       tags: "",
     },
   });
+  
+  // Expose the ref for the Textarea
+  const contentRef = (el: HTMLTextAreaElement) => {
+    form.register('content');
+    contentTextAreaRef.current = el;
+  }
 
   useEffect(() => {
     if (post) {
@@ -130,6 +140,32 @@ export function PostForm({ post }: PostFormProps) {
     } finally {
       setIsSuggestingTitles(false);
     }
+  }
+  
+  function handleInsertImage(imageUrl: string) {
+    const textarea = contentTextAreaRef.current;
+    if (!textarea) return;
+
+    const markdownImage = `![Image](${imageUrl})`;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentContent = form.getValues('content') || '';
+    
+    const newContent = 
+        currentContent.substring(0, start) +
+        markdownImage +
+        currentContent.substring(end);
+        
+    form.setValue('content', newContent, { shouldDirty: true });
+
+    // Move cursor after the inserted image markdown
+    setTimeout(() => {
+        textarea.focus();
+        textarea.selectionStart = textarea.selectionEnd = start + markdownImage.length;
+    }, 0);
+    
+    setIsMediaModalOpen(false);
+    toast({ title: 'Image Inserted', description: 'The image has been added to your post.' });
   }
 
   async function handleGenerateMeta() {
@@ -238,6 +274,7 @@ export function PostForm({ post }: PostFormProps) {
   }
 
   return (
+    <>
     <Form {...form}>
       <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -268,16 +305,23 @@ export function PostForm({ post }: PostFormProps) {
                     <FormItem>
                       <div className="flex items-center justify-between">
                         <FormLabel>Content</FormLabel>
-                        <Button type="button" size="sm" variant="ghost" onClick={handleGenerateDraft} disabled={isGeneratingDraft}>
-                          {isGeneratingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                          Generate Draft
-                        </Button>
+                        <div className="flex items-center gap-2">
+                           <Button type="button" size="sm" variant="outline" onClick={() => setIsMediaModalOpen(true)}>
+                              <ImageIcon className="mr-2 h-4 w-4" />
+                              Add Media
+                          </Button>
+                          <Button type="button" size="sm" variant="ghost" onClick={handleGenerateDraft} disabled={isGeneratingDraft}>
+                            {isGeneratingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            Generate Draft
+                          </Button>
+                        </div>
                       </div>
                       <FormControl>
                         <Textarea
                           placeholder="Tell your story..."
                           className="min-h-[400px]"
                           {...field}
+                          ref={contentRef}
                         />
                       </FormControl>
                       <FormDescription>
@@ -409,5 +453,11 @@ export function PostForm({ post }: PostFormProps) {
         </div>
       </form>
     </Form>
+    <MediaModal 
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        onInsertImage={handleInsertImage}
+    />
+    </>
   );
 }
