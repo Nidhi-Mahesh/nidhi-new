@@ -17,16 +17,23 @@ export interface Post {
 const postsCollection = collection(db, 'posts');
 
 export const createPost = async (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
-  const docRef = await addDoc(postsCollection, {
+  const data: any = {
     title: post.title,
     content: post.content || '',
     author: post.author,
     status: post.status,
     metaDescription: post.metaDescription || '',
-    tags: post.tags || [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+
+  if (post.tags && post.tags.length > 0) {
+    data.tags = post.tags;
+  } else {
+    data.tags = [];
+  }
+
+  const docRef = await addDoc(postsCollection, data);
   return docRef.id;
 };
 

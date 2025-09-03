@@ -9,6 +9,7 @@ import {
   Users,
   Settings,
   HelpCircle,
+  Bug,
 } from "lucide-react"
 
 import {
@@ -33,6 +34,7 @@ const menuItems = [
 
 const bottomMenuItems = [
     { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/debug", label: "Debug", icon: Bug },
 ];
 
 export function DashboardSidebar() {
