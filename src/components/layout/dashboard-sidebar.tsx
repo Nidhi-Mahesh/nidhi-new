@@ -9,6 +9,7 @@ import {
   Image as ImageIcon,
   Users,
   Settings,
+  MessageSquare,
 } from "lucide-react"
 
 import {
@@ -29,6 +30,7 @@ const menuItems = [
   { href: "/posts", label: "Posts", icon: Newspaper },
   { href: "/media", label: "Media", icon: ImageIcon },
   { href: "/users", label: "Users", icon: Users },
+  { href: "/chat", label: "Chatbot", icon: MessageSquare },
 ]
 
 const bottomMenuItems = [
