@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -8,8 +9,6 @@ import {
   Image as ImageIcon,
   Users,
   Settings,
-  HelpCircle,
-  Bug,
 } from "lucide-react"
 
 import {
@@ -34,7 +33,6 @@ const menuItems = [
 
 const bottomMenuItems = [
     { href: "/settings", label: "Settings", icon: Settings },
-    { href: "/debug", label: "Debug", icon: Bug },
 ];
 
 export function DashboardSidebar() {
