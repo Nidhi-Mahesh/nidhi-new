@@ -28,8 +28,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles, Image as ImageIcon } from "lucide-react";
+import { Loader2, Sparkles, Image as ImageIcon, ShieldAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
 
 const postFormSchema = z.object({
   title: z.string().min(2, {
@@ -70,6 +72,8 @@ export function PostForm({ post }: PostFormProps) {
       tags: "",
     },
   });
+  
+  const hasEditPermissions = !post || !user ? true : user.role === 'Admin' || user.role === 'Editor' || post.author === user.displayName;
   
   // Expose the ref for the Textarea
   const contentRef = (el: HTMLTextAreaElement) => {
@@ -232,13 +236,18 @@ export function PostForm({ post }: PostFormProps) {
       toast({ title: "Authentication Error", description: "You must be logged in to create or update a post.", variant: "destructive" });
       return;
     }
+    
+    if (!hasEditPermissions) {
+        toast({ title: "Permission Denied", description: "You do not have permission to edit this post.", variant: "destructive" });
+        return;
+    }
 
     setIsSubmitting(status);
     
     const postData = {
       title: data.title,
       content: data.content || '',
-      author: user.displayName || user.email || "Anonymous",
+      author: post?.author || user.displayName || user.email || "Anonymous",
       status: status,
       metaDescription: data.metaDescription,
       tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
@@ -292,7 +301,7 @@ export function PostForm({ post }: PostFormProps) {
                     <FormItem>
                       <FormLabel>Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your amazing post title" {...field} />
+                        <Input placeholder="Your amazing post title" {...field} disabled={!hasEditPermissions} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -306,11 +315,11 @@ export function PostForm({ post }: PostFormProps) {
                       <div className="flex items-center justify-between">
                         <FormLabel>Content</FormLabel>
                         <div className="flex items-center gap-2">
-                           <Button type="button" size="sm" variant="outline" onClick={() => setIsMediaModalOpen(true)}>
+                           <Button type="button" size="sm" variant="outline" onClick={() => setIsMediaModalOpen(true)} disabled={!hasEditPermissions}>
                               <ImageIcon className="mr-2 h-4 w-4" />
                               Add Media
                           </Button>
-                          <Button type="button" size="sm" variant="ghost" onClick={handleGenerateDraft} disabled={isGeneratingDraft}>
+                          <Button type="button" size="sm" variant="ghost" onClick={handleGenerateDraft} disabled={isGeneratingDraft || !hasEditPermissions}>
                             {isGeneratingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                             Generate Draft
                           </Button>
@@ -322,6 +331,7 @@ export function PostForm({ post }: PostFormProps) {
                           className="min-h-[400px]"
                           {...field}
                           ref={contentRef}
+                          disabled={!hasEditPermissions}
                         />
                       </FormControl>
                       <FormDescription>
@@ -347,13 +357,13 @@ export function PostForm({ post }: PostFormProps) {
                     <FormItem>
                       <div className="flex items-center justify-between">
                         <FormLabel>Meta Description</FormLabel>
-                        <Button type="button" size="sm" variant="ghost" onClick={handleGenerateMeta} disabled={isGeneratingMeta}>
+                        <Button type="button" size="sm" variant="ghost" onClick={handleGenerateMeta} disabled={isGeneratingMeta || !hasEditPermissions}>
                            {isGeneratingMeta ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                            Generate
                         </Button>
                       </div>
                       <FormControl>
-                        <Textarea placeholder="A brief summary for search engines." {...field} />
+                        <Textarea placeholder="A brief summary for search engines." {...field} disabled={!hasEditPermissions} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -373,7 +383,7 @@ export function PostForm({ post }: PostFormProps) {
                 <Button 
                   type="button" 
                   onClick={form.handleSubmit(data => onSubmit(data, 'Published'))} 
-                  disabled={!!isSubmitting}
+                  disabled={!!isSubmitting || !hasEditPermissions}
                 >
                   {isSubmitting === 'Published' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {post?.id ? 'Update & Publish' : 'Publish Post'}
@@ -382,11 +392,19 @@ export function PostForm({ post }: PostFormProps) {
                   type="button" 
                   variant="outline" 
                   onClick={form.handleSubmit(data => onSubmit(data, 'Draft'))} 
-                  disabled={!!isSubmitting}
+                  disabled={!!isSubmitting || !hasEditPermissions}
                 >
                    {isSubmitting === 'Draft' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {post?.id ? 'Save Changes' : 'Save as Draft'}
                 </Button>
+                 {!hasEditPermissions && (
+                    <Alert variant="destructive" className="mt-2">
+                      <ShieldAlert className="h-4 w-4" />
+                      <AlertDescription>
+                        You do not have permission to edit this post.
+                      </AlertDescription>
+                    </Alert>
+                  )}
               </CardContent>
             </Card>
 
@@ -397,7 +415,7 @@ export function PostForm({ post }: PostFormProps) {
               <CardContent className="flex flex-col gap-2">
                 <Dialog>
                    <DialogTrigger asChild>
-                     <Button type="button" variant="outline" onClick={handleSuggestTitles} disabled={isSuggestingTitles}>
+                     <Button type="button" variant="outline" onClick={handleSuggestTitles} disabled={isSuggestingTitles || !hasEditPermissions}>
                         {isSuggestingTitles ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                         Suggest Titles
                       </Button>
@@ -432,13 +450,13 @@ export function PostForm({ post }: PostFormProps) {
                     <FormItem>
                        <div className="flex items-center justify-between">
                         <FormLabel>Tags</FormLabel>
-                        <Button type="button" size="sm" variant="ghost" onClick={handleSuggestTags} disabled={isSuggestingTags}>
+                        <Button type="button" size="sm" variant="ghost" onClick={handleSuggestTags} disabled={isSuggestingTags || !hasEditPermissions}>
                           {isSuggestingTags ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                           Suggest
                         </Button>
                       </div>
                       <FormControl>
-                        <Input placeholder="Tech, AI, Writing" {...field} />
+                        <Input placeholder="Tech, AI, Writing" {...field} disabled={!hasEditPermissions} />
                       </FormControl>
                       <FormDescription>
                         Comma-separated tags.
@@ -461,3 +479,5 @@ export function PostForm({ post }: PostFormProps) {
     </>
   );
 }
+
+    

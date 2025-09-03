@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { getPosts, deletePost, Post } from "@/services/posts";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/auth-provider";
 
 function formatTimestamp(timestamp: any) {
   if (!timestamp) {
@@ -34,6 +35,7 @@ export default function PostsPage() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchPosts() {
@@ -81,6 +83,17 @@ export default function PostsPage() {
       setSelectedPost(null);
     }
   };
+  
+  const canEditOrDelete = (post: Post) => {
+    if (!user) return false;
+    if (user.role === 'Admin' || user.role === 'Editor') {
+      return true;
+    }
+    if (user.role === 'Author' && post.author === user.displayName) {
+      return true;
+    }
+    return false;
+  }
 
   return (
     <>
@@ -153,16 +166,24 @@ export default function PostsPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                              <Link href={`/posts/${post.id}/edit`}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(post)}>
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
+                            {canEditOrDelete(post) ? (
+                              <>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/posts/${post.id}/edit`}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(post)}>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                               <DropdownMenuItem disabled>
+                                  No actions available
+                               </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -199,3 +220,5 @@ export default function PostsPage() {
     </>
   );
 }
+
+    
