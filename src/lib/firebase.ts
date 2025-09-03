@@ -6,12 +6,13 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  "projectId": "modern-chyrp",
+  "appId": "1:380240154321:web:82d1063fa55e45cc4dfff0",
+  "storageBucket": "modern-chyrp.firebasestorage.app",
+  "apiKey": "AIzaSyCak-4DjsKp9DE6NWu0wQQyV4k8g6_XgiY",
+  "authDomain": "modern-chyrp.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "380240154321"
 };
 
 // Initialize Firebase
