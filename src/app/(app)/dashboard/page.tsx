@@ -5,11 +5,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { BarChart, MessageSquare, Newspaper, Users, ArrowRight } from "lucide-react";
+import { BarChart, MessageSquare, Newspaper, Users, ArrowRight, Heart } from "lucide-react";
 import { getPosts, Post } from '@/services/posts';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/context/auth-provider';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 function formatTimestamp(timestamp: any) {
   if (!timestamp) {
@@ -64,6 +65,14 @@ export default function DashboardPage() {
     if (user.role === 'Author' && post.authorId === user.uid) return true;
     return false;
   }
+  
+  const recentActivity = [
+    { type: 'comment', user: 'Olivia Martin', avatar: 'https://picsum.photos/100/100?random=1', text: 'commented on "Getting Started with Next.js 14"', time: '5m ago' },
+    { type: 'like', user: 'Jackson Lee', avatar: 'https://picsum.photos/100/100?random=2', text: 'liked "AI in Modern Web Development"', time: '12m ago' },
+    { type: 'comment', user: 'Isabella Nguyen', avatar: 'https://picsum.photos/100/100?random=3', text: 'commented on "A Guide to Tailwind CSS"', time: '30m ago' },
+    { type: 'like', user: 'William Kim', avatar: 'https://picsum.photos/100/100?random=4', text: 'liked "The Future of Blogging Platforms"', time: '1h ago' },
+     { type: 'like', user: 'Sophia Garcia', avatar: 'https://picsum.photos/100/100?random=5', text: 'liked "Getting Started with Next.js 14"', time: '2h ago' },
+  ];
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -90,9 +99,24 @@ export default function DashboardPage() {
             <CardTitle>Recent Activity</CardTitle>
              <CardDescription>Recent comments and likes will be displayed here.</CardDescription>
           </CardHeader>
-          <CardContent className="pl-6">
-            <div className="flex items-center justify-center h-48 border-2 border-dashed rounded-lg">
-                <p className="text-sm text-muted-foreground">Activity feed coming soon.</p>
+          <CardContent>
+            <div className="space-y-6">
+                {recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-start">
+                    <Avatar className="h-9 w-9 mr-4">
+                      <AvatarImage src={activity.avatar} alt="Avatar" data-ai-hint="user avatar" />
+                      <AvatarFallback>{activity.user.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="text-sm">
+                        <span className="font-semibold">{activity.user}</span>
+                        {' '}{activity.text}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                    </div>
+                     {activity.type === 'comment' ? <MessageSquare className="h-5 w-5 text-muted-foreground" /> : <Heart className="h-5 w-5 text-destructive" />}
+                  </div>
+                ))}
             </div>
           </CardContent>
         </Card>
