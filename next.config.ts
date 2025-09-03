@@ -26,4 +26,7 @@ const nextConfig: NextConfig = {
   },
 };
 
+// This is required to load the .env.local file.
+require('dotenv').config({ path: './.env.local' });
+
 export default nextConfig;
