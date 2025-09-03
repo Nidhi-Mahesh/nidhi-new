@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, Timestamp, getDoc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, Timestamp, getDoc, query, orderBy, runTransaction } from 'firebase/firestore';
 
 export interface Post {
   id?: string;
@@ -13,6 +13,11 @@ export interface Post {
   updatedAt?: any;
   metaDescription?: string;
   tags?: string[];
+  likeCount?: number;
+  dislikeCount?: number;
+  commentCount?: number;
+  likes?: string[];
+  dislikes?: string[];
 }
 
 const postsCollection = collection(db, 'posts');
@@ -23,6 +28,11 @@ export const createPost = async (post: Omit<Post, 'id' | 'createdAt' | 'updatedA
       ...post,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
+      likeCount: 0,
+      dislikeCount: 0,
+      commentCount: 0,
+      likes: [],
+      dislikes: [],
     };
     if (!data.tags) {
         data.tags = [];
@@ -94,3 +104,20 @@ export const deletePost = async (id: string): Promise<void> => {
     throw new Error(`Failed to delete post: ${error.message}`);
   }
 };
+
+export const incrementCommentCount = async (postId: string) => {
+    const postRef = doc(db, 'posts', postId);
+    try {
+        await runTransaction(db, async (transaction) => {
+            const postDoc = await transaction.get(postRef);
+            if (!postDoc.exists()) {
+                throw "Document does not exist!";
+            }
+            const newCommentCount = (postDoc.data().commentCount || 0) + 1;
+            transaction.update(postRef, { commentCount: newCommentCount });
+        });
+    } catch (e) {
+        console.error("Transaction failed: ", e);
+        throw new Error("Failed to update comment count.");
+    }
+}
