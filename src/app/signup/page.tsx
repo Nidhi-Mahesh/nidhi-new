@@ -9,8 +9,8 @@ import { useAuth } from "@/context/auth-provider"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { useToast } from "@/components/ui/use-toast"
-import { Icons } from "@/components/icons"
+import { useToast } from "@/hooks/use-toast"
+import { Icons } from "@/components/ui/icons"
 
 
 export default function SignupPage() {
@@ -123,4 +123,3 @@ export default function SignupPage() {
     </div>
   )
 }
-

@@ -17,16 +17,14 @@ const usersCollection = collection(db, 'users');
 export const createUserProfile = async (uid: string, email: string, displayName: string, photoURL: string | null): Promise<void> => {
   try {
     const userRef = doc(db, 'users', uid);
-    // Check if user profile already exists
     const docSnap = await getDoc(userRef);
     if (!docSnap.exists()) {
-        const isFirstUser = (await getDocs(query(usersCollection))).empty;
         await setDoc(userRef, {
             uid,
             email,
             displayName,
             photoURL,
-            role: isFirstUser ? 'Admin' : 'Author', // Make the first user an Admin
+            role: 'Author', // Default role for all new users
         });
     }
   } catch (error: any) {

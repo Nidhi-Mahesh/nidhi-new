@@ -38,7 +38,6 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login(data.email, data.password);
-      router.push('/dashboard');
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -54,7 +53,6 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     try {
       await loginWithGoogle();
-      router.push('/dashboard');
     } catch (error: any) {
        toast({
         title: "Google Login Failed",
@@ -121,7 +119,7 @@ export default function LoginPage() {
             Login with Google
           </Button>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
+            Don't have an account?{" "}
             <Link href="/signup" className="underline">
               Sign up
             </Link>

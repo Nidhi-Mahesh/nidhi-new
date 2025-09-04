@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth-provider";
 import { MediaModal } from "@/components/media-modal";
 import { EmbedMediaModal } from "@/components/embed-media-modal";
+import { MarkdownPreview } from "@/components/markdown-preview"; // Import the new component
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs components
 import { Loader2, Sparkles, Image as ImageIcon, Link as LinkIcon, ShieldAlert, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -65,15 +67,12 @@ export function PostForm({ post }: PostFormProps) {
   
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
 
-  // Determine if the user has permission to edit.
-  // This is true if it's a new post, or if the user is an Admin/Editor,
-  // or if the user is the author of the existing post.
   const hasEditPermissions = (() => {
-    if (!user) return false; // Not logged in
-    if (!post) return true; // It's a new post, anyone logged in can create
-    if (user.role === 'Admin' || user.role === 'Editor') return true; // Admins/Editors can edit anything
-    if (user.role === 'Author' && post.authorId === user.uid) return true; // Authors can edit their own posts
-    return false; // All other cases are denied
+    if (!user) return false;
+    if (!post) return true;
+    if (user.role === 'Admin' || user.role === 'Editor') return true;
+    if (user.role === 'Author' && post.authorId === user.uid) return true;
+    return false;
   })();
   
   const form = useForm<PostFormValues>({
@@ -84,11 +83,11 @@ export function PostForm({ post }: PostFormProps) {
       metaDescription: "",
       tags: "",
     },
-    // Disable the form if the user doesn't have permission
     disabled: !hasEditPermissions,
   });
+
+  const contentValue = form.watch("content");
   
-  // Expose the ref for the Textarea
   const contentRef = (el: HTMLTextAreaElement) => {
     form.register('content');
     contentTextAreaRef.current = el;
@@ -174,7 +173,6 @@ export function PostForm({ post }: PostFormProps) {
         
     form.setValue('content', newContent, { shouldDirty: true });
 
-    // Move cursor after the inserted content
     setTimeout(() => {
         textarea.focus();
         textarea.selectionStart = textarea.selectionEnd = start + markdown.length;
@@ -277,14 +275,12 @@ export function PostForm({ post }: PostFormProps) {
 
     try {
       if (post?.id) {
-        // Update existing post
         await updatePost(post.id, postData);
         toast({
           title: "Post Updated",
           description: "Your post has been successfully updated.",
         });
       } else {
-        // Create new post
         const newPostId = await createPost(postData);
         toast({
           title: `Post ${status === 'Published' ? 'Published' : 'Saved'}`,
@@ -342,36 +338,49 @@ export function PostForm({ post }: PostFormProps) {
                   control={form.control}
                   name="content"
                   render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Content</FormLabel>
-                        <div className="flex items-center gap-2">
-                           <Button type="button" size="sm" variant="outline" onClick={() => setIsMediaModalOpen(true)} disabled={!hasEditPermissions}>
-                              <ImageIcon className="mr-2 h-4 w-4" />
-                              Add Media
-                          </Button>
-                          <Button type="button" size="sm" variant="outline" onClick={() => setIsEmbedModalOpen(true)} disabled={!hasEditPermissions}>
-                              <LinkIcon className="mr-2 h-4 w-4" />
-                              Embed Media
-                          </Button>
-                          <Button type="button" size="sm" variant="ghost" onClick={handleGenerateDraft} disabled={isGeneratingDraft || !hasEditPermissions}>
-                            {isGeneratingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                            Generate Draft
-                          </Button>
+                     <FormItem>
+                        <div className="flex items-center justify-between">
+                            <FormLabel>Content</FormLabel>
+                             <div className="flex items-center gap-2">
+                                <Button type="button" size="sm" variant="outline" onClick={() => setIsMediaModalOpen(true)} disabled={!hasEditPermissions}>
+                                    <ImageIcon className="mr-2 h-4 w-4" />
+                                    Add Media
+                                </Button>
+                                <Button type="button" size="sm" variant="outline" onClick={() => setIsEmbedModalOpen(true)} disabled={!hasEditPermissions}>
+                                    <LinkIcon className="mr-2 h-4 w-4" />
+                                    Embed Media
+                                </Button>
+                                <Button type="button" size="sm" variant="ghost" onClick={handleGenerateDraft} disabled={isGeneratingDraft || !hasEditPermissions}>
+                                    {isGeneratingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                    Generate Draft
+                                </Button>
+                            </div>
                         </div>
-                      </div>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Tell your story..."
-                          className="min-h-[400px]"
-                          {...field}
-                          ref={contentRef}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        You can use Markdown for formatting.
-                      </FormDescription>
-                      <FormMessage />
+                        <Tabs defaultValue="edit" className="w-full">
+                            <TabsList>
+                                <TabsTrigger value="edit">Edit</TabsTrigger>
+                                <TabsTrigger value="preview">Preview</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="edit">
+                                <FormControl>
+                                    <Textarea
+                                    placeholder="Tell your story..."
+                                    className="min-h-[400px]"
+                                    {...field}
+                                    ref={contentRef}
+                                    />
+                                </FormControl>
+                            </TabsContent>
+                            <TabsContent value="preview">
+                                <div className="min-h-[400px] p-4 border rounded-md">
+                                    <MarkdownPreview content={contentValue || ''} />
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                        <FormDescription>
+                            You can use Markdown for formatting.
+                        </FormDescription>
+                        <FormMessage />
                     </FormItem>
                   )}
                 />

@@ -9,11 +9,10 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, Copy } from "lucide-react";
+import { Upload, Copy, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { uploadFile, getFiles, StorageFile } from "@/services/storage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 
 interface MediaModalProps {
   isOpen: boolean;
@@ -26,6 +25,7 @@ export function MediaModal({ isOpen, onClose, onInsertImage }: MediaModalProps) 
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   async function fetchFiles() {
@@ -47,25 +47,41 @@ export function MediaModal({ isOpen, onClose, onInsertImage }: MediaModalProps) 
   useEffect(() => {
     if (isOpen) {
       fetchFiles();
+    } else {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
     }
-  }, [isOpen, toast]);
+  }, [isOpen]);
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    let newPreviewUrl = "";
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    newPreviewUrl = URL.createObjectURL(file);
+    setPreviewUrl(newPreviewUrl);
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
-      await uploadFile(file, (progress) => {
+      // The uploadFile function returns the public URL of the uploaded file
+      const publicUrl = await uploadFile(file, (progress) => {
         setUploadProgress(progress);
       });
+      
+      // Use the public URL to insert the image
+      onInsertImage(publicUrl);
       toast({
         title: "Upload Successful",
-        description: `File "${file.name}" has been uploaded.`
+        description: `File "${file.name}" has been uploaded and inserted.`
       });
-      await fetchFiles(); // Refresh file list
+      onClose(); // Close the modal
+      
     } catch (error) {
       toast({
         title: "Upload Failed",
@@ -73,10 +89,22 @@ export function MediaModal({ isOpen, onClose, onInsertImage }: MediaModalProps) 
         variant: "destructive"
       });
     } finally {
+      // Clean up the local preview URL
+      if (newPreviewUrl) {
+        URL.revokeObjectURL(newPreviewUrl);
+      }
+      setPreviewUrl(null);
       setIsUploading(false);
       setUploadProgress(0);
     }
   };
+  
+  const clearPreview = () => {
+    if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+    }
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -125,8 +153,16 @@ export function MediaModal({ isOpen, onClose, onInsertImage }: MediaModalProps) 
           </TabsContent>
           <TabsContent value="upload" className="flex-grow">
              <div className="h-full flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-8">
-                {isUploading ? (
+                {previewUrl && !isUploading ? (
+                  <div className="w-full max-w-sm text-center">
+                    <div className="relative mb-4">
+                      <Image src={previewUrl} alt="Preview" width={200} height={200} className="rounded-lg object-contain mx-auto" />
+                      <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={clearPreview}><X className="h-4 w-4"/></Button>
+                    </div>
+                  </div>
+                ) : isUploading ? (
                     <div className="w-full max-w-sm text-center">
+                        {previewUrl && <Image src={previewUrl} alt="Uploading Preview" width={200} height={200} className="rounded-lg object-contain mx-auto mb-4" />}
                         <Progress value={uploadProgress} className="w-full mb-4" />
                         <p className="text-sm text-muted-foreground">Uploading... {Math.round(uploadProgress)}%</p>
                     </div>
@@ -140,7 +176,7 @@ export function MediaModal({ isOpen, onClose, onInsertImage }: MediaModalProps) 
                               Choose File
                           </label>
                         </Button>
-                        <Input id="modal-file-upload" type="file" onChange={handleFileChange} className="hidden" disabled={isUploading} accept="image/*" />
+                        <Input id="modal-file-upload" type="file" onChange={handleFileChange} className="hidden" accept="image/*" />
                     </>
                 )}
              </div>
