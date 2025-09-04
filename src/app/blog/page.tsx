@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getPosts, Post } from "@/services/posts";
 import { getUsers, UserProfile } from "@/services/users";
 import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PostInteractions } from "@/components/post-interactions";
 import { CommentsSection } from "@/components/comments-section";
@@ -70,7 +72,7 @@ export default async function BlogPage() {
 
                         <h1 className="text-4xl font-bold font-headline mb-4">{post.title}</h1>
                         <ReactMarkdown
-                            components={{
+                           components={{
                                 h1: ({node, ...props}) => <h2 className="text-3xl font-bold font-headline mt-8 mb-4" {...props} />,
                                 h2: ({node, ...props}) => <h3 className="text-2xl font-bold font-headline mt-6 mb-4" {...props} />,
                                 h3: ({node, ...props}) => <h4 className="text-xl font-bold font-headline mt-4 mb-4" {...props} />,
@@ -80,6 +82,24 @@ export default async function BlogPage() {
                                 ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-4 space-y-2" {...props} />,
                                 blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-4 text-muted-foreground" {...props} />,
                                 img: ({node, ...props}) => <img className="rounded-lg shadow-md my-6 max-w-full h-auto" {...props} />,
+                                code(props) {
+                                  const {children, className, node, ...rest} = props
+                                  const match = /language-(\w+)/.exec(className || '')
+                                  return match ? (
+                                    <SyntaxHighlighter
+                                      {...rest}
+                                      style={materialDark}
+                                      language={match[1]}
+                                      PreTag="div"
+                                    >
+                                      {String(children).replace(/\n$/, '')}
+                                    </SyntaxHighlighter>
+                                  ) : (
+                                    <code {...rest} className={className}>
+                                      {children}
+                                    </code>
+                                  )
+                                }
                             }}
                         >
                             {post.content}
