@@ -3,13 +3,36 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
-import { getPosts } from "@/services/posts";
+import { getPosts, Post } from "@/services/posts";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { PostsTable } from "@/components/posts-table";
+import { Timestamp } from "firebase/firestore";
 
+// Helper function to convert Firestore Timestamps to serializable format
+const serializePost = (post: Post): Post => {
+  const toDate = (timestamp: any): Date => {
+    if (timestamp instanceof Timestamp) {
+      return timestamp.toDate();
+    }
+    if (typeof timestamp === 'string') {
+      return new Date(timestamp);
+    }
+    if (timestamp && typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
+      return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+    }
+    return new Date();
+  };
+
+  return {
+    ...post,
+    createdAt: post.createdAt ? toDate(post.createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: post.updatedAt ? toDate(post.updatedAt).toISOString() : undefined,
+  };
+};
 
 export default async function PostsPage() {
-  const posts = await getPosts();
+  const rawPosts = await getPosts();
+  const posts = rawPosts.map(serializePost);
   const user = await getAuthenticatedUser();
   
   return (

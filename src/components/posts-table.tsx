@@ -12,16 +12,28 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { deletePost, Post } from "@/services/posts";
 import { useToast } from "@/hooks/use-toast";
 import type { AppUser } from "@/context/auth-provider";
+import { Timestamp } from "firebase/firestore";
+
+function toDate(timestamp: any): Date {
+  if (timestamp instanceof Timestamp) {
+    return timestamp.toDate();
+  }
+  if (typeof timestamp === 'string') {
+    return new Date(timestamp);
+  }
+  if (timestamp && typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
+    return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+  }
+  return new Date();
+};
+
 
 function formatTimestamp(timestamp: any) {
   if (!timestamp) {
     return 'N/A';
   }
-  if (timestamp && typeof timestamp.toDate === 'function') {
-    return timestamp.toDate().toLocaleDateString();
-  }
   try {
-    return new Date(timestamp).toLocaleDateString();
+    return toDate(timestamp).toLocaleDateString();
   } catch (error) {
     return 'Invalid Date';
   }
@@ -109,7 +121,7 @@ export function PostsTable({ initialPosts, user }: { initialPosts: Post[], user:
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                      <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!canEditOrDelete(post)}>
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Toggle menu</span>
                       </Button>

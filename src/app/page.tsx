@@ -109,13 +109,14 @@ export default function Home() {
               className="relative aspect-[16/9] w-full max-w-5xl mx-auto rounded-xl border bg-card shadow-2xl overflow-hidden"
               data-ai-hint="3d model"
             >
-              <iframe 
-                src='https://my.spline.design/interactivespheres-958063030f813c97166147b2c5e527d1/' 
-                frameBorder='0' 
-                width='100%' 
-                height='100%'
-                className="absolute top-0 left-0 w-full h-full"
-              ></iframe>
+              <spline-viewer
+                url='https://prod.spline.design/kBLHfuWO7HLJtWv1/scene.splinecode'
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  height: '100%',
+                }}
+              ></spline-viewer>
             </div>
           </div>
         </section>

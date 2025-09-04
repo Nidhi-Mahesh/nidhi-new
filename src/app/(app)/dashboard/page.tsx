@@ -21,18 +21,25 @@ function toDate(timestamp: any): Date {
   if (typeof timestamp === 'string') {
     return new Date(timestamp);
   }
-  if (timestamp && timestamp.seconds) {
+  if (timestamp && typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
     return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
   }
-  return new Date();
+  // Fallback for cases where it might already be a Date object or other formats
+  try {
+    const d = new Date(timestamp);
+    if (!isNaN(d.getTime())) return d;
+  } catch (e) {}
+
+  return new Date(); // Fallback to current date if parsing fails
 };
 
 function formatRelativeTime(date: Date | string | undefined) {
   if (!date) return 'some time ago';
   try {
-    const d = typeof date === 'string' ? new Date(date) : date;
+    const d = toDate(date);
     return formatDistanceToNow(d, { addSuffix: true });
   } catch (error) {
+    console.error("Error formatting relative time:", error);
     return 'a while ago';
   }
 }
@@ -68,14 +75,17 @@ export default async function DashboardPage() {
 
   const recentActivity = posts.slice(0, 5).map(post => {
       const author = usersMap.get(post.authorId);
-      const isUpdate = post.updatedAt && post.createdAt && toDate(post.updatedAt).getTime() !== toDate(post.createdAt).getTime();
+      const createdAtDate = toDate(post.createdAt);
+      const updatedAtDate = post.updatedAt ? toDate(post.updatedAt) : createdAtDate;
+      const isUpdate = updatedAtDate.getTime() !== createdAtDate.getTime();
+      
       return {
           id: post.id,
           type: isUpdate ? 'update' : 'create',
           user: author?.displayName || post.author,
           avatar: author?.photoURL,
           text: `${isUpdate ? 'updated' : 'created'} the post "${post.title}"`,
-          time: formatRelativeTime(isUpdate ? toDate(post.updatedAt) : toDate(post.createdAt)),
+          time: formatRelativeTime(isUpdate ? updatedAtDate : createdAtDate),
       }
   });
   

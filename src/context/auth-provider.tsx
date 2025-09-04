@@ -37,11 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userProfile = await getUserProfile(firebaseUser.uid);
         const appUser = { ...firebaseUser, role: userProfile?.role };
         setUser(appUser);
-
-        // Redirect if on an auth page
-        if (pathname === '/login' || pathname === '/signup') {
-          router.push('/dashboard');
-        }
       } else {
         setUser(null);
          // Redirect to login if not on a public page
