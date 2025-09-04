@@ -172,4 +172,3 @@ export function MediaClient({ initialFiles }: { initialFiles: StorageFile[] }) {
     )
   }
 }
-

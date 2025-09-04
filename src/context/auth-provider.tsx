@@ -7,7 +7,7 @@ import { auth } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { createUserProfile, getUserProfile, UserProfile, updateUserProfileInDb } from '@/services/users';
 
-interface AppUser extends User {
+export interface AppUser extends User {
     role?: UserProfile['role'];
 }
 
@@ -45,8 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUser(null);
          // Redirect to login if not on a public page
-        const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/';
-        if (!isAuthPage) {
+        const publicPaths = ['/login', '/signup', '/', '/blog'];
+        const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+
+        if (!isPublicPath) {
           router.push('/login');
         }
       }
