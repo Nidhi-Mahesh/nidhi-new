@@ -38,7 +38,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.youtube.com https://www.googletagmanager.com https://*.google-analytics.com https://unpkg.com; child-src https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://firebasestorage.googleapis.com https://picsum.photos; connect-src 'self' https://*.googleapis.com https://prod.spline.design; font-src 'self' data: https://fonts.gstatic.com;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.youtube.com https://www.googletagmanager.com https://*.google-analytics.com https://unpkg.com; child-src https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://picsum.photos; connect-src 'self' https://*.googleapis.com https://prod.spline.design https://www.google-analytics.com; font-src 'self' data: https://fonts.gstatic.com;",
           },
         ],
       },
