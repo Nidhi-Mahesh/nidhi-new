@@ -12,12 +12,26 @@ import { getUserProfile } from '@/services/users';
 import { headers } from 'next/headers';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { RecentPosts } from '@/components/dashboard/recent-posts';
+import { Timestamp } from 'firebase/firestore';
 
-function formatRelativeTime(timestamp: any) {
-  if (!timestamp) return 'some time ago';
+function toDate(timestamp: any): Date {
+  if (timestamp instanceof Timestamp) {
+    return timestamp.toDate();
+  }
+  if (typeof timestamp === 'string') {
+    return new Date(timestamp);
+  }
+  if (timestamp && timestamp.seconds) {
+    return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+  }
+  return new Date();
+};
+
+function formatRelativeTime(date: Date | string | undefined) {
+  if (!date) return 'some time ago';
   try {
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return formatDistanceToNow(date, { addSuffix: true });
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return formatDistanceToNow(d, { addSuffix: true });
   } catch (error) {
     return 'a while ago';
   }
@@ -35,6 +49,14 @@ function getInitials(name: string | null | undefined) {
     return 'U';
 }
 
+const serializePost = (post: Post): Post => {
+  return {
+    ...post,
+    createdAt: post.createdAt ? toDate(post.createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: post.updatedAt ? toDate(post.updatedAt).toISOString() : undefined,
+  };
+};
+
 export default async function DashboardPage() {
   const [posts, allUsers] = await Promise.all([
     getPosts(),
@@ -46,16 +68,18 @@ export default async function DashboardPage() {
 
   const recentActivity = posts.slice(0, 5).map(post => {
       const author = usersMap.get(post.authorId);
-      const isUpdate = post.updatedAt && post.createdAt && post.updatedAt.seconds !== post.createdAt.seconds;
+      const isUpdate = post.updatedAt && post.createdAt && toDate(post.updatedAt).getTime() !== toDate(post.createdAt).getTime();
       return {
           id: post.id,
           type: isUpdate ? 'update' : 'create',
           user: author?.displayName || post.author,
           avatar: author?.photoURL,
           text: `${isUpdate ? 'updated' : 'created'} the post "${post.title}"`,
-          time: formatRelativeTime(post.updatedAt || post.createdAt),
+          time: formatRelativeTime(isUpdate ? toDate(post.updatedAt) : toDate(post.createdAt)),
       }
   });
+  
+  const serializedPosts = posts.map(serializePost);
 
 
   const stats = [
@@ -111,7 +135,7 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <RecentPosts posts={posts} user={user} />
+        <RecentPosts posts={serializedPosts} user={user} />
       </div>
     </div>
   )

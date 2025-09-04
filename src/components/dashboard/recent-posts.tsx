@@ -6,16 +6,28 @@ import { AppUser } from '@/context/auth-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from "lucide-react";
+import { Timestamp } from 'firebase/firestore';
+
+const toDate = (timestamp: any): Date => {
+  if (timestamp instanceof Timestamp) {
+    return timestamp.toDate();
+  }
+  if (typeof timestamp === 'string') {
+    return new Date(timestamp);
+  }
+  if (timestamp && timestamp.seconds) {
+    return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+  }
+  return new Date();
+};
+
 
 function formatTimestamp(timestamp: any) {
   if (!timestamp) {
     return 'N/A';
   }
-  if (timestamp && typeof timestamp.toDate === 'function') {
-    return timestamp.toDate().toLocaleDateString();
-  }
   try {
-    return new Date(timestamp).toLocaleDateString();
+    return toDate(timestamp).toLocaleDateString();
   } catch (error) {
     return 'Invalid Date';
   }

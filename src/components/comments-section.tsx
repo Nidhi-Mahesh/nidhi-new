@@ -44,7 +44,7 @@ function getInitials(name: string | null | undefined) {
     return 'U';
 }
 
-// Helper to handle various date formats
+// Helper to handle various date formats robustly
 const toDate = (timestamp: any): Date => {
   if (timestamp instanceof Timestamp) {
     return timestamp.toDate();
@@ -52,7 +52,6 @@ const toDate = (timestamp: any): Date => {
   if (typeof timestamp === 'string') {
     return new Date(timestamp);
   }
-  // Fallback for serialized data that is already a string date
   if (timestamp && timestamp.seconds) {
     return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
   }
@@ -85,7 +84,7 @@ export function CommentsSection({ post }: CommentsSectionProps) {
             return {
                 id: doc.id,
                 ...data,
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+                createdAt: data.createdAt ? toDate(data.createdAt).toISOString() : new Date().toISOString(),
             } as Comment
         });
         
