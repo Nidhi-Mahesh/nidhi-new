@@ -1,5 +1,5 @@
 
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Post } from './posts';
 
@@ -10,11 +10,7 @@ import type { Post } from './posts';
 export const getPostsForChatbot = async (): Promise<{ title: string; content: string }[]> => {
   try {
     const postsCollection = collection(db, 'posts');
-    const q = query(
-      postsCollection,
-      where('status', '==', 'Published'),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(postsCollection, where('status', '==', 'Published'));
     const snapshot = await getDocs(q);
     
     if (snapshot.empty) {
