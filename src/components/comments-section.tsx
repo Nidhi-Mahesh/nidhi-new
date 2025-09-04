@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage, FormDescription } from '@/components/ui/form';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2 } from 'lucide-react';
@@ -23,7 +23,7 @@ import Link from 'next/link';
 
 
 const commentFormSchema = z.object({
-  content: z.string().min(1, 'Comment cannot be empty.').max(500, 'Comment is too long.'),
+  content: z.string().min(1, 'Comment cannot be empty.').max(500, 'Comment must be 500 characters or less.'),
 });
 
 type CommentFormValues = z.infer<typeof commentFormSchema>;
@@ -125,6 +125,8 @@ export function CommentsSection({ post }: CommentsSectionProps) {
         form.control.disabled = false;
     }
   };
+  
+  const commentContent = form.watch('content');
 
   return (
     <Card className="flex-grow flex flex-col h-full">
@@ -148,7 +150,12 @@ export function CommentsSection({ post }: CommentsSectionProps) {
                       <FormControl>
                         <Textarea placeholder="Add a comment..." {...field} rows={2} />
                       </FormControl>
-                      <FormMessage />
+                       <div className="flex justify-between items-center">
+                          <FormMessage />
+                           <p className={`text-xs ${commentContent.length > 500 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                            {commentContent.length} / 500
+                           </p>
+                       </div>
                     </FormItem>
                   )}
                 />

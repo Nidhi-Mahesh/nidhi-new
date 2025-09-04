@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Loader2 } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -39,9 +39,11 @@ const roles: UserRole[] = ['Admin', 'Editor', 'Author'];
 
 export function UsersTable({ initialUsers, currentUser }: { initialUsers: UserProfile[], currentUser: AppUser | null }) {
   const [users, setUsers] = useState<UserProfile[]>(initialUsers);
+  const [isUpdatingRole, setIsUpdatingRole] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleRoleChange = async (uid: string, newRole: UserRole) => {
+    setIsUpdatingRole(uid);
     // Optimistic UI update
     const originalUsers = [...users];
     setUsers(users.map(u => u.uid === uid ? { ...u, role: newRole } : u));
@@ -60,6 +62,8 @@ export function UsersTable({ initialUsers, currentUser }: { initialUsers: UserPr
         description: 'Failed to update user role.',
         variant: 'destructive',
       });
+    } finally {
+        setIsUpdatingRole(null);
     }
   }
 
@@ -99,30 +103,34 @@ export function UsersTable({ initialUsers, currentUser }: { initialUsers: UserPr
                 <Badge variant="secondary">{user.role}</Badge>
               </TableCell>
               <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost" disabled={user.uid === currentUser?.uid}>
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuSub>
-                          <DropdownMenuSubTrigger>Change Role</DropdownMenuSubTrigger>
-                          <DropdownMenuSubContent>
-                              <DropdownMenuRadioGroup value={user.role} onValueChange={(value) => handleRoleChange(user.uid, value as UserRole)}>
-                                  {roles.map(role => (
-                                      <DropdownMenuRadioItem key={role} value={role}>
-                                          {role}
-                                      </DropdownMenuRadioItem>
-                                  ))}
-                              </DropdownMenuRadioGroup>
-                          </DropdownMenuSubContent>
-                      </DropdownMenuSub>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {isUpdatingRole === user.uid ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost" disabled={user.uid === currentUser?.uid}>
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>Change Role</DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuRadioGroup value={user.role} onValueChange={(value) => handleRoleChange(user.uid, value as UserRole)}>
+                                    {roles.map(role => (
+                                        <DropdownMenuRadioItem key={role} value={role}>
+                                            {role}
+                                        </DropdownMenuRadioItem>
+                                    ))}
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
               </TableCell>
             </TableRow>
           ))

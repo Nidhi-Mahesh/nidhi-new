@@ -29,7 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles, Image as ImageIcon, Link as LinkIcon, ShieldAlert } from "lucide-react";
+import { Loader2, Sparkles, Image as ImageIcon, Link as LinkIcon, ShieldAlert, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -38,7 +38,7 @@ const postFormSchema = z.object({
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
-  content: z.string().optional(),
+  content: z.string().min(1, { message: 'Content is required.' }),
   metaDescription: z.string().optional(),
   tags: z.string().optional(),
 });
@@ -430,6 +430,14 @@ export function PostForm({ post }: PostFormProps) {
                 >
                    {isSubmitting === 'Draft' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {post?.id ? 'Save Changes' : 'Save as Draft'}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="link"
+                  onClick={() => router.back()}
+                >
+                   <ArrowLeft className="mr-2 h-4 w-4" />
+                   Back to Posts
                 </Button>
               </CardContent>
             </Card>
