@@ -285,7 +285,7 @@ export function PostForm({ post }: PostFormProps) {
         });
       } else {
         // Create new post
-        await createPost(postData);
+        const newPostId = await createPost(postData);
         toast({
           title: `Post ${status === 'Published' ? 'Published' : 'Saved'}`,
           description: "Your post has been successfully saved.",
