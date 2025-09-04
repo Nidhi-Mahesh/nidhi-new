@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Edit3, Feather, Rss, Share2, Sparkles } from "lucide-react";
+import { ArrowRight, Edit3, Feather, Rss, Share2, Sparkles, Wand2 } from "lucide-react";
 import Logo from "@/components/logo";
 
 export default function Home() {
@@ -92,6 +92,29 @@ export default function Home() {
               <Button asChild size="lg" variant="outline">
                 <Link href="/blog">View The Blog</Link>
               </Button>
+            </div>
+          </div>
+        </section>
+        
+        <section className="py-20 lg:py-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h3 className="text-3xl lg:text-4xl font-bold font-headline">Interactive Showcase</h3>
+              <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
+                Engage with our content in a whole new dimension. Scroll and interact with the 3D model below.
+              </p>
+            </div>
+            <div 
+              className="relative aspect-[16/9] w-full max-w-5xl mx-auto rounded-xl border-2 border-dashed bg-muted flex items-center justify-center"
+              data-ai-hint="3d model placeholder"
+            >
+              <div className="text-center text-muted-foreground">
+                  <Wand2 className="w-16 h-16 mx-auto mb-4" />
+                  <p className="font-semibold">3D Model Coming Soon</p>
+                  <p className="text-sm">Provide the embed link to see the magic happen!</p>
+              </div>
+              {/* The iframe for your 3D model will go here */}
+              {/* Example: <iframe src='YOUR_3D_MODEL_LINK' frameBorder='0' width='100%' height='100%'></iframe> */}
             </div>
           </div>
         </section>
