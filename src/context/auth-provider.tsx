@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup, updatePassword } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult, updatePassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { createUserProfile, getUserProfile, UserProfile, updateUserProfileInDb } from '@/services/users';
@@ -17,7 +17,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, displayName: string) => Promise<any>;
   logout: () => Promise<void>;
-  loginWithGoogle: () => Promise<any>;
+  loginWithGoogle: () => Promise<void>;
   updateUserProfile: (profile: { displayName?: string, photoURL?: string }) => Promise<void>;
   updateUserPassword: (newPassword: string) => Promise<void>;
 }
@@ -29,17 +29,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  
+
   useEffect(() => {
+    getRedirectResult(auth).catch((error) => {
+      console.error("Error processing redirect result:", error);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch user profile on auth state change
-        const userProfile = await getUserProfile(firebaseUser.uid);
+        let userProfile = await getUserProfile(firebaseUser.uid);
+        if (!userProfile) {
+          await createUserProfile(firebaseUser.uid, firebaseUser.email!, firebaseUser.displayName!, firebaseUser.photoURL);
+          userProfile = await getUserProfile(firebaseUser.uid);
+        }
+
         const appUser = { ...firebaseUser, role: userProfile?.role };
         setUser(appUser);
+
+        const protectedRedirectPaths = ['/login', '/signup'];
+        if (protectedRedirectPaths.includes(pathname)) {
+            router.push('/dashboard');
+        }
       } else {
         setUser(null);
-         // Redirect to login if not on a public page
         const publicPaths = ['/login', '/signup', '/', '/blog'];
         const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
 
@@ -62,7 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const firebaseUser = userCredential.user;
     if (firebaseUser) {
         await updateProfile(firebaseUser, { displayName });
-        // The onAuthStateChanged listener will handle fetching the profile
         await createUserProfile(firebaseUser.uid, firebaseUser.email!, displayName, firebaseUser.photoURL);
     }
     return userCredential;
@@ -73,22 +84,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginWithGoogle = async () => {
-    const provider = new new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    const firebaseUser = userCredential.user;
-     if (firebaseUser) {
-        // Check if a profile exists, if not create one
-        // The onAuthStateChanged listener will handle fetching the profile
-        await createUserProfile(firebaseUser.uid, firebaseUser.email!, firebaseUser.displayName!, firebaseUser.photoURL);
-    }
-    return userCredential;
+    const provider = new GoogleAuthProvider();
+    await signInWithRedirect(auth, provider);
   }
 
   const updateUserProfile = async (profile: { displayName?: string, photoURL?: string }) => {
     if (auth.currentUser) {
         await updateProfile(auth.currentUser, profile);
         await updateUserProfileInDb(auth.currentUser.uid, profile);
-        // Manually update user state to reflect changes immediately
         setUser(prevUser => prevUser ? { ...prevUser, ...profile, displayName: profile.displayName ?? prevUser.displayName, photoURL: profile.photoURL ?? prevUser.photoURL } : null);
     } else {
         throw new Error("No user is signed in.");

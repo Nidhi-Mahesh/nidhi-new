@@ -1,4 +1,5 @@
 
+'use client'
 import Link from "next/link";
 import { getPosts, Post } from "@/services/posts";
 import { getUsers, UserProfile } from "@/services/users";
@@ -12,6 +13,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Timestamp } from "firebase/firestore";
 import { cn } from "@/lib/utils";
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 
 
 function getInitials(name: string | null | undefined) {
@@ -65,15 +69,15 @@ export default async function BlogPage() {
           
           return (
             <section key={post.id} className="h-full w-full snap-start flex items-center justify-center relative p-4 md:p-8">
-              <div className="max-w-7xl w-full h-full flex flex-row items-start gap-8">
+              <div className="max-w-4xl w-full h-full flex flex-col items-center">
                 
                 {/* Main Content */}
-                <Card className="flex-grow h-full overflow-hidden">
+                <Card className="flex-grow h-full overflow-hidden w-full">
                   <ScrollArea className="h-full">
                     <CardContent className="p-6 md:p-8">
                       <div className="prose prose-lg dark:prose-invert max-w-none">
                          <div className="flex items-center gap-4 mb-8">
-                           <Link href="#" className="flex items-center gap-4 group">
+                           <Link href={`/users/${authorProfile?.uid}`} className="flex items-center gap-4 group">
                               <Avatar className="h-16 w-16 border-2 border-transparent group-hover:border-primary transition-all">
                                 <AvatarImage src={authorProfile?.photoURL || undefined} alt={authorProfile?.displayName || undefined} />
                                 <AvatarFallback>{getInitials(authorProfile?.displayName)}</AvatarFallback>
@@ -85,9 +89,12 @@ export default async function BlogPage() {
                           </Link>
                          </div>
 
-
-                        <h1 className="text-4xl font-bold font-headline mb-4">{post.title}</h1>
+                        <Link href={`/blog/${post.id}`}>
+                          <h1 className="text-4xl font-bold font-headline mb-4">{post.title}</h1>
+                        </Link>
                         <ReactMarkdown
+                           remarkPlugins={[remarkMath]}
+                           rehypePlugins={[rehypeKatex]}
                            components={{
                                 h1: ({node, ...props}) => <h2 className="text-3xl font-bold font-headline mt-8 mb-4" {...props} />,
                                 h2: ({node, ...props}) => <h3 className="text-2xl font-bold font-headline mt-6 mb-4" {...props} />,
@@ -120,15 +127,13 @@ export default async function BlogPage() {
                             {post.content}
                         </ReactMarkdown>
                       </div>
+                      <div className="mt-8">
+                        <PostInteractions post={serializablePost} />
+                        <CommentsSection post={serializablePost} />
+                      </div>
                     </CardContent>
                   </ScrollArea>
                 </Card>
-
-                {/* Right Sidebar for Interactions and Comments */}
-                <div className="w-full max-w-md flex-shrink-0 h-full flex flex-col gap-4">
-                    <PostInteractions post={serializablePost} />
-                    <CommentsSection post={serializablePost} />
-                </div>
 
               </div>
             </section>

@@ -10,6 +10,7 @@ import {
   Users,
   Settings,
   BookOpen,
+  LifeBuoy,
 } from "lucide-react"
 
 import {
@@ -35,6 +36,7 @@ const menuItems = [
 
 const bottomMenuItems = [
     { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/support", label: "Support", icon: LifeBuoy },
 ];
 
 export function DashboardSidebar() {
@@ -54,10 +56,10 @@ export function DashboardSidebar() {
   return (
     <>
       <SidebarHeader>
-        <div className="flex items-center gap-2 p-2">
+        <Link href="/dashboard" className="flex items-center gap-2 p-2">
           <Logo />
           <span className="text-lg font-semibold font-headline">Modern Chyrp</span>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
@@ -103,7 +105,7 @@ export function DashboardSidebar() {
       </SidebarContent>
       <SidebarSeparator />
       <SidebarFooter>
-        <div className="flex items-center gap-3 p-2">
+        <Link href="/settings" className="flex items-center gap-3 p-2">
             <Avatar>
                 <AvatarImage src={user?.photoURL || undefined} data-ai-hint="user avatar" alt="User avatar" />
                 <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
@@ -112,7 +114,7 @@ export function DashboardSidebar() {
                 <p className="font-semibold truncate">{user?.displayName || "Anonymous"}</p>
                 <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
-        </div>
+        </Link>
       </SidebarFooter>
     </>
   )
