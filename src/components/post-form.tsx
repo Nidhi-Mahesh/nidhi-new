@@ -106,6 +106,8 @@ export function PostForm({ post }: PostFormProps) {
 
   async function handleGenerateDraft() {
     const title = form.getValues("title");
+    const existingContent = form.getValues("content");
+
     if (!title) {
       toast({
         title: "Title is required",
@@ -116,8 +118,9 @@ export function PostForm({ post }: PostFormProps) {
     }
     setIsGeneratingDraft(true);
     try {
-      const result = await generateDraftFromHeadline({ headline: title });
-      form.setValue("content", result.draft);
+      const result = await generateDraftFromHeadline({ headline: title, existingContent: existingContent });
+      const newContent = (existingContent ? existingContent + "\n\n" : "") + result.draft;
+      form.setValue("content", newContent);
       toast({
         title: "Draft Generated",
         description: "The AI has generated a draft for your post.",

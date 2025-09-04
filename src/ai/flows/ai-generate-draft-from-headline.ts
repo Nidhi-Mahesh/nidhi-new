@@ -12,6 +12,7 @@ import {z} from 'genkit';
 
 const GenerateDraftFromHeadlineInputSchema = z.object({
   headline: z.string().describe('The headline or brief for the post.'),
+  existingContent: z.string().optional().describe('Existing content in the editor, which may include images or text.'),
 });
 export type GenerateDraftFromHeadlineInput = z.infer<
   typeof GenerateDraftFromHeadlineInputSchema
@@ -36,9 +37,26 @@ const prompt = ai.definePrompt({
   name: 'generateDraftFromHeadlinePrompt',
   input: {schema: GenerateDraftFromHeadlineInputSchema},
   output: {schema: GenerateDraftFromHeadlineOutputSchema},
-  prompt: `You are an expert content creator. Generate a blog post draft based on the provided headline or brief.\n\nHeadline/Brief: {{{headline}}}\n\nYour response should include:\n1.  A suggested title for the post.
+  prompt: `You are an expert content creator. Generate a blog post draft based on the provided headline or brief.
+
+Headline/Brief: {{{headline}}}
+
+{{#if existingContent}}
+The user has already added some content, likely an image. You MUST incorporate this existing content into your draft. Your generated draft will be appended to what the user has already written.
+Existing Content:
+---
+{{{existingContent}}}
+---
+{{/if}}
+
+Your response should include:
+1.  A suggested title for the post.
 2.  An outline of the post, including sections and sub-sections.
-3.  An initial draft of the post content, expanding on the outline.\n\nEnsure the draft is well-structured, engaging, and informative.\n\nOutput in markdown format.`,
+3.  An initial draft of the post content, expanding on the outline.
+
+Ensure the draft is well-structured, engaging, and informative.
+
+Output in markdown format.`,
 });
 
 const generateDraftFromHeadlineFlow = ai.defineFlow(
