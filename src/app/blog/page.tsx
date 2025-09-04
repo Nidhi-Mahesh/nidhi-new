@@ -11,6 +11,7 @@ import { CommentsSection } from "@/components/comments-section";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Timestamp } from "firebase/firestore";
+import { cn } from "@/lib/utils";
 
 
 function getInitials(name: string | null | undefined) {
@@ -96,7 +97,7 @@ export default async function BlogPage() {
                                 ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-4 space-y-2" {...props} />,
                                 ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-4 space-y-2" {...props} />,
                                 blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-4 text-muted-foreground" {...props} />,
-                                img: ({node, ...props}) => <img className="rounded-lg shadow-md my-6 max-w-full h-auto" alt={props.alt} {...props} />,
+                                img: ({node, ...props}) => <img className="rounded-lg shadow-md my-6 max-w-full h-auto" alt={props.alt || ''} {...props} />,
                                 code(props) {
                                   const {children, className, node, ...rest} = props
                                   const match = /language-(\w+)/.exec(className || '')
