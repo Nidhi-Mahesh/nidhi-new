@@ -41,10 +41,13 @@ export function ChatbotWidget() {
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     const names = name.split(' ');
-    if (names.length > 1) {
+    if (names.length > 1 && names[0] && names[names.length - 1]) {
       return `${names[0][0]}${names[names.length - 1][0]}`;
     }
-    return name[0];
+    if (name && name.length > 0) {
+        return name[0];
+    }
+    return 'U';
   };
 
   const onSubmit = async (data: ChatFormValues) => {
@@ -99,7 +102,7 @@ export function ChatbotWidget() {
                 {messages.length === 0 && (
                     <div className="text-center text-muted-foreground p-8">
                         <Sparkles className="mx-auto h-10 w-10 mb-4 text-primary/50" />
-                        <p>Ask me anything!</p>
+                        <p>Ask me anything about the posts on this website!</p>
                     </div>
                 )}
                 {messages.map((message, index) => (

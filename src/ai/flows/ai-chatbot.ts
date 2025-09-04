@@ -33,14 +33,14 @@ const prompt = ai.definePrompt({
     posts: z.any(),
   })},
   output: {schema: WebsiteChatbotOutputSchema},
-  prompt: `You are a helpful AI assistant for the "Modern Chyrp" website. Your goal is to answer user questions based ONLY on the content of the blog posts provided.
+  prompt: `You are a helpful AI assistant for a website. Your goal is to answer user questions based ONLY on the content of the blog posts provided.
 
 Do not make up information. If the answer cannot be found in the provided posts, politely say that you don't have information on that topic.
 
 Here is the user's question:
 "{{{query}}}"
 
-Here are all the blog posts from the website. Use them as your knowledge base:
+Here is the content of all the blog posts from the website. Use it as your knowledge base:
 ---
 {{#each posts}}
 Title: {{{this.title}}}
