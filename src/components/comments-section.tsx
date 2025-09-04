@@ -11,7 +11,7 @@ import { Post } from '@/services/posts';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormMessage, FormDescription } from '@/components/ui/form';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -52,10 +52,16 @@ const toDate = (timestamp: any): Date => {
   if (typeof timestamp === 'string') {
     return new Date(timestamp);
   }
-  if (timestamp && timestamp.seconds) {
+  if (timestamp && typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
     return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
   }
-  return new Date();
+  // Fallback for cases where it might already be a Date object or other formats
+  try {
+    const d = new Date(timestamp);
+    if (!isNaN(d.getTime())) return d;
+  } catch (e) {}
+
+  return new Date(); // Fallback to current date if parsing fails
 };
 
 
@@ -131,12 +137,13 @@ export function CommentsSection({ post }: CommentsSectionProps) {
   return (
     <Card className="flex-grow flex flex-col h-full">
       <CardHeader>
-        <CardTitle>Comments ({post.commentCount || 0})</CardTitle>
+        <CardTitle>Comments</CardTitle>
+        <CardDescription>Join the conversation.</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden flex flex-col gap-4">
         {user ? (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-4 p-1">
               <Avatar className="h-9 w-9 mt-1">
                 <AvatarImage src={user.photoURL || undefined} data-ai-hint="user avatar" />
                 <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
@@ -152,8 +159,8 @@ export function CommentsSection({ post }: CommentsSectionProps) {
                       </FormControl>
                        <div className="flex justify-between items-center">
                           <FormMessage />
-                           <p className={`text-xs ${commentContent.length > 500 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                            {commentContent.length} / 500
+                           <p className={`text-xs ${commentContent && commentContent.length > 500 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                            {commentContent?.length || 0} / 500
                            </p>
                        </div>
                     </FormItem>
@@ -191,7 +198,7 @@ export function CommentsSection({ post }: CommentsSectionProps) {
                                 {comment.createdAt ? formatDistanceToNow(toDate(comment.createdAt), { addSuffix: true }) : 'just now'}
                             </p>
                         </div>
-                        <p className="text-sm">{comment.content}</p>
+                        <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
                     </div>
                 </div>
                 ))

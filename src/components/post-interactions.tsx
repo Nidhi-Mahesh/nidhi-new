@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Card } from './ui/card';
 
 interface PostInteractionsProps {
   post: Post;
@@ -58,7 +59,7 @@ export function PostInteractions({ post: initialPost }: PostInteractionsProps) {
   const hasDisliked = post.dislikes?.includes(user?.uid || '');
 
   return (
-    <div className="flex items-center gap-4 rounded-lg border bg-card p-4 shadow-sm">
+    <Card className="flex items-center gap-4 p-4 shadow-sm">
       <Button
         variant="ghost"
         className="flex items-center gap-2"
@@ -77,10 +78,10 @@ export function PostInteractions({ post: initialPost }: PostInteractionsProps) {
         <ThumbsDown className={cn("h-6 w-6", hasDisliked && "fill-destructive text-destructive")} />
         <span className="font-semibold">{post.dislikeCount || 0}</span>
       </Button>
-      <div className="flex items-center gap-2 text-muted-foreground">
+      <div className="flex items-center gap-2 text-muted-foreground ml-auto">
         <MessageCircle className="h-6 w-6" />
         <span className="font-semibold">{post.commentCount || 0} Comments</span>
       </div>
-    </div>
+    </Card>
   );
 }

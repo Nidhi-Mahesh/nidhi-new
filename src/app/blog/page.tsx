@@ -10,6 +10,7 @@ import { PostInteractions } from "@/components/post-interactions";
 import { CommentsSection } from "@/components/comments-section";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
+import { Timestamp } from "firebase/firestore";
 
 
 function getInitials(name: string | null | undefined) {
@@ -24,12 +25,26 @@ function getInitials(name: string | null | undefined) {
     return 'U';
 }
 
+const toDate = (timestamp: any): Date => {
+  if (timestamp instanceof Timestamp) {
+    return timestamp.toDate();
+  }
+  if (typeof timestamp === 'string') {
+    return new Date(timestamp);
+  }
+  if (timestamp && typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
+    return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+  }
+  return new Date();
+};
+
+
 // Helper function to convert Firestore Timestamps to serializable format
 const serializePost = (post: Post): Post => {
   return {
     ...post,
-    createdAt: post.createdAt?.toDate ? post.createdAt.toDate().toISOString() : post.createdAt,
-    updatedAt: post.updatedAt?.toDate ? post.updatedAt.toDate().toISOString() : post.updatedAt,
+    createdAt: post.createdAt ? toDate(post.createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: post.updatedAt ? toDate(post.updatedAt).toISOString() : undefined,
   };
 };
 
@@ -59,7 +74,7 @@ export default async function BlogPage() {
                          <div className="flex items-center gap-4 mb-8">
                            <Link href="#" className="flex items-center gap-4 group">
                               <Avatar className="h-16 w-16 border-2 border-transparent group-hover:border-primary transition-all">
-                                <AvatarImage src={authorProfile?.photoURL || undefined} alt={authorProfile?.displayName} />
+                                <AvatarImage src={authorProfile?.photoURL || undefined} alt={authorProfile?.displayName || undefined} />
                                 <AvatarFallback>{getInitials(authorProfile?.displayName)}</AvatarFallback>
                               </Avatar>
                               <div>
@@ -81,13 +96,12 @@ export default async function BlogPage() {
                                 ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-4 space-y-2" {...props} />,
                                 ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-4 space-y-2" {...props} />,
                                 blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-4 text-muted-foreground" {...props} />,
-                                img: ({node, ...props}) => <img className="rounded-lg shadow-md my-6 max-w-full h-auto" {...props} />,
+                                img: ({node, ...props}) => <img className="rounded-lg shadow-md my-6 max-w-full h-auto" alt={props.alt} {...props} />,
                                 code(props) {
                                   const {children, className, node, ...rest} = props
                                   const match = /language-(\w+)/.exec(className || '')
                                   return match ? (
                                     <SyntaxHighlighter
-                                      {...rest}
                                       style={materialDark}
                                       language={match[1]}
                                       PreTag="div"
@@ -95,7 +109,7 @@ export default async function BlogPage() {
                                       {String(children).replace(/\n$/, '')}
                                     </SyntaxHighlighter>
                                   ) : (
-                                    <code {...rest} className={className}>
+                                    <code {...rest} className={cn("bg-muted px-1 py-0.5 rounded-sm", className)}>
                                       {children}
                                     </code>
                                   )
