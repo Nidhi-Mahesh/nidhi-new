@@ -16,7 +16,7 @@ If you are seeing `CORS policy` errors in your browser console when trying to up
 You will need to have the Google Cloud CLI (`gcloud`) installed and authenticated.
 
 ```bash
-gcloud storage buckets update gs://modern-chyrp.appspot.com --cors-file=./storage.cors.json
+gcloud storage buckets update gs://modern-chyrp.firebasestorage.app --cors-file=./storage.cors.json
 ```
 
 After running this command, refresh your browser tab, and the media library should work correctly.

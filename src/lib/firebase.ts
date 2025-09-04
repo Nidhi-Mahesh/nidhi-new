@@ -11,7 +11,7 @@ const firebaseConfig = {
   "apiKey": "AIzaSyCak-4DjsKp9DE6NWu0wQQyV4k8g6_XgiY",
   "authDomain": "modern-chyrp.firebaseapp.com",
   "projectId": "modern-chyrp",
-  "storageBucket": "modern-chyrp.appspot.com",
+  "storageBucket": "modern-chyrp.firebasestorage.app",
   "messagingSenderId": "380240154321",
   "appId": "1:380240154321:web:82d1063fa55e45cc4dfff0"
 };
