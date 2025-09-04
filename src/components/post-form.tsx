@@ -14,6 +14,7 @@ import { createPost, updatePost, Post } from "@/services/posts";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth-provider";
 import { MediaModal } from "@/components/media-modal";
+import { EmbedMediaModal } from "@/components/embed-media-modal";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles, Image as ImageIcon, ShieldAlert } from "lucide-react";
+import { Loader2, Sparkles, Image as ImageIcon, Link as LinkIcon, ShieldAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -58,6 +59,7 @@ export function PostForm({ post }: PostFormProps) {
   const [isGeneratingMeta, setIsGeneratingMeta] = useState(false);
   const [isSuggestingTags, setIsSuggestingTags] = useState(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
   
   const contentTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   
@@ -157,30 +159,38 @@ export function PostForm({ post }: PostFormProps) {
     }
   }
   
-  function handleInsertImage(imageUrl: string) {
+  const insertContent = (markdown: string) => {
     const textarea = contentTextAreaRef.current;
     if (!textarea) return;
 
-    const markdownImage = `![Image](${imageUrl})`;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const currentContent = form.getValues('content') || '';
     
     const newContent = 
         currentContent.substring(0, start) +
-        markdownImage +
+        markdown +
         currentContent.substring(end);
         
     form.setValue('content', newContent, { shouldDirty: true });
 
-    // Move cursor after the inserted image markdown
+    // Move cursor after the inserted content
     setTimeout(() => {
         textarea.focus();
-        textarea.selectionStart = textarea.selectionEnd = start + markdownImage.length;
+        textarea.selectionStart = textarea.selectionEnd = start + markdown.length;
     }, 0);
-    
+  }
+  
+  function handleInsertImage(imageUrl: string) {
+    insertContent(`![Image](${imageUrl})`);
     setIsMediaModalOpen(false);
     toast({ title: 'Image Inserted', description: 'The image has been added to your post.' });
+  }
+  
+  function handleEmbedMedia(embedCode: string) {
+    insertContent(`\n\n${embedCode}\n\n`);
+    setIsEmbedModalOpen(false);
+    toast({ title: 'Media Embedded', description: 'The embed code has been added to your post.' });
   }
 
   async function handleGenerateMeta() {
@@ -340,6 +350,10 @@ export function PostForm({ post }: PostFormProps) {
                               <ImageIcon className="mr-2 h-4 w-4" />
                               Add Media
                           </Button>
+                          <Button type="button" size="sm" variant="outline" onClick={() => setIsEmbedModalOpen(true)} disabled={!hasEditPermissions}>
+                              <LinkIcon className="mr-2 h-4 w-4" />
+                              Embed Media
+                          </Button>
                           <Button type="button" size="sm" variant="ghost" onClick={handleGenerateDraft} disabled={isGeneratingDraft || !hasEditPermissions}>
                             {isGeneratingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                             Generate Draft
@@ -487,6 +501,11 @@ export function PostForm({ post }: PostFormProps) {
         isOpen={isMediaModalOpen}
         onClose={() => setIsMediaModalOpen(false)}
         onInsertImage={handleInsertImage}
+    />
+    <EmbedMediaModal
+        isOpen={isEmbedModalOpen}
+        onClose={() => setIsEmbedModalOpen(false)}
+        onEmbed={handleEmbedMedia}
     />
     </>
   );
