@@ -108,13 +108,14 @@ export default function Home() {
               className="relative aspect-[16/9] w-full max-w-5xl mx-auto rounded-xl border-2 border-dashed bg-muted flex items-center justify-center"
               data-ai-hint="3d model placeholder"
             >
-              <div className="text-center text-muted-foreground">
+              <div className="text-center text-muted-foreground p-8">
                   <Wand2 className="w-16 h-16 mx-auto mb-4" />
-                  <p className="font-semibold">3D Model Coming Soon</p>
-                  <p className="text-sm">Provide the embed link to see the magic happen!</p>
+                  <p className="font-semibold">3D Model Showcase</p>
+                  <p className="text-sm">This is where the interactive Spline or Sketchfab model will be embedded.</p>
+                  <p className="text-xs mt-2">Just provide the embed link to bring the magic to life!</p>
               </div>
-              {/* The iframe for your 3D model will go here */}
-              {/* Example: <iframe src='YOUR_3D_MODEL_LINK' frameBorder='0' width='100%' height='100%'></iframe> */}
+              {/* The iframe for your 3D model will go here. For example: */}
+              {/* <iframe src='https://prod.spline.design/kBLHfuWO7HLJtWv1/scene.splinecode' frameBorder='0' width='100%' height='100%'></iframe> */}
             </div>
           </div>
         </section>
