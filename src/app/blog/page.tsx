@@ -1,5 +1,4 @@
 
-'use client'
 import Link from "next/link";
 import { getPosts, Post } from "@/services/posts";
 import { getUsers, UserProfile } from "@/services/users";
