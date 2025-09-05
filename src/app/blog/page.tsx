@@ -85,18 +85,19 @@ export default function BlogPage() {
           </Button>
         </div>
       }
-      <div className="relative w-full h-[calc(100vh-81px)] overflow-y-auto snap-y snap-mandatory">
+      <div className="container mx-auto py-8">
+        <div className="max-w-6xl mx-auto">
         {publishedPosts.length > 0 ? (
-          publishedPosts.map(post => {
+          publishedPosts.map((post, index) => {
             const authorProfile = usersMap.get(post.authorId);
             const serializablePost = serializePost(post);
             
             return (
-              <section key={post.id} className="h-full w-full snap-start flex items-center justify-center relative p-4 md:p-8">
-                <div className="max-w-6xl w-full h-full flex flex-col md:flex-row items-start gap-8">
+              <section key={post.id} className={`w-full flex items-center justify-center relative p-4 md:p-8 ${index < publishedPosts.length - 1 ? 'mb-16' : ''}`}>
+                <div className="max-w-6xl w-full flex flex-col md:flex-row items-stretch gap-8 h-[85vh]">
                   
                   {/* Main Content */}
-                  <div className="flex-grow h-full overflow-hidden w-full md:w-2/3">
+                  <div className="flex-grow overflow-hidden w-full md:w-2/3">
                     <Card className="h-full">
                       <ScrollArea className="h-full">
                         <CardContent className="p-6 md:p-8">
@@ -158,14 +159,14 @@ export default function BlogPage() {
                   </div>
 
                   {/* Interactions Sidebar */}
-                  <div className="w-full md:w-1/3 h-full flex flex-col gap-8">
+                  <div className="w-full md:w-1/3 flex flex-col gap-8">
                     <Card>
                       <CardContent className="p-6">
                         <h3 className="text-lg font-semibold mb-4">Reactions</h3>
                         <PostInteractions post={serializablePost} />
                       </CardContent>
                     </Card>
-                    <Card className="flex-grow">
+                    <Card className="flex-grow overflow-hidden">
                       <CardContent className="p-6 h-full">
                         <h3 className="text-lg font-semibold mb-4">Comments</h3>
                         <ScrollArea className="h-[calc(100%-40px)]">
@@ -184,6 +185,7 @@ export default function BlogPage() {
             <p className="text-muted-foreground mt-2">Check back soon for new content.</p>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
