@@ -96,6 +96,22 @@ export function BlogSearch({ posts, users, onSearchResults }: BlogSearchProps) {
     }
   };
 
+  // Auto-search as user types (debounced)
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setShowResults(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setIsSearching(true);
+      setShowResults(true);
+      setTimeout(() => setIsSearching(false), 300);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   const clearSearch = () => {
     setSearchQuery('');
     setShowResults(false);
