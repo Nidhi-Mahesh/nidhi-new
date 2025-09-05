@@ -2,6 +2,7 @@
 import { db } from '@/lib/firebase';
 import { doc, runTransaction, arrayUnion, arrayRemove } from 'firebase/firestore';
 import type { Post } from './posts';
+import { cache, CacheKeys, CacheTags } from './cache';
 
 export type InteractionType = 'like' | 'dislike';
 
@@ -58,6 +59,10 @@ export const updateInteraction = async (postId: string, userId: string, type: In
                 dislikeCount: newDislikes.length,
             });
         });
+
+        // Invalidate cache for this specific post and all posts
+        await cache.delete(CacheKeys.posts.byId(postId));
+        await cache.clearByTags([CacheTags.POSTS]);
     } catch (error: any) {
         console.error("Interaction transaction failed: ", error);
         throw new Error(`Failed to update interaction: ${error.message}`);

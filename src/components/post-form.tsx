@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,6 +43,7 @@ const postFormSchema = z.object({
   content: z.string().min(1, { message: 'Content is required.' }),
   metaDescription: z.string().optional(),
   tags: z.string().optional(),
+  categories: z.string().optional(), // Added categories field
 });
 
 type PostFormValues = z.infer<typeof postFormSchema>;
@@ -55,7 +56,7 @@ export function PostForm({ post }: PostFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState<"Publish" | "Draft" | false>(false);
+  const [isSubmitting, setIsSubmitting] = useState<"Published" | "Draft" | false>(false);
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [isSuggestingTitles, setIsSuggestingTitles] = useState(false);
   const [isGeneratingMeta, setIsGeneratingMeta] = useState(false);
@@ -67,21 +68,22 @@ export function PostForm({ post }: PostFormProps) {
   
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
 
-  const hasEditPermissions = (() => {
+  const hasEditPermissions = useMemo(() => {
     if (!user) return false;
-    if (!post) return true;
+    if (!post) return true; // New post, so user can create it
     if (user.role === 'Admin' || user.role === 'Editor') return true;
     if (user.role === 'Author' && post.authorId === user.uid) return true;
     return false;
-  })();
+  }, [user, post]);
   
   const form = useForm<PostFormValues>({
     resolver: zodResolver(postFormSchema),
     defaultValues: {
-      title: "",
-      content: "",
-      metaDescription: "",
-      tags: "",
+      title: post?.title || "",
+      content: post?.content || "",
+      metaDescription: post?.metaDescription || "",
+      tags: post?.tags?.join(', ') || "",
+      categories: post?.categories?.join(', ') || "",
     },
     disabled: !hasEditPermissions,
   });
@@ -100,6 +102,7 @@ export function PostForm({ post }: PostFormProps) {
         content: post.content || '',
         metaDescription: post.metaDescription || '',
         tags: post.tags?.join(', ') || '',
+        categories: post.categories?.join(', ') || '', // Added categories
       });
     }
   }, [post, form]);
@@ -286,6 +289,7 @@ export function PostForm({ post }: PostFormProps) {
       status: status,
       metaDescription: data.metaDescription,
       tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+      categories: data.categories ? data.categories.split(',').map(cat => cat.trim()).filter(cat => cat) : [], // Added categories
     };
 
     try {
@@ -518,6 +522,25 @@ export function PostForm({ post }: PostFormProps) {
                       </FormControl>
                       <FormDescription>
                         Comma-separated tags.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="categories"
+                  render={({ field }) => (
+                    <FormItem>
+                       <div className="flex items-center justify-between">
+                        <FormLabel>Categories</FormLabel>
+                        {/* TODO: Add category suggestion functionality */}
+                      </div>
+                      <FormControl>
+                        <Input placeholder="Technology, AI, Programming" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Comma-separated categories.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
