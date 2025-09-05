@@ -187,6 +187,18 @@ export function PostForm({ post }: PostFormProps) {
     setIsMediaModalOpen(false);
     toast({ title: 'Image Inserted', description: 'The image has been added to your post.' });
   }
+
+  function handleInsertVideo(videoUrl: string) {
+    insertContent(`\n\n<video controls>\n  <source src="${videoUrl}" type="video/mp4">\n  Your browser does not support the video tag.\n</video>\n\n`);
+    setIsMediaModalOpen(false);
+    toast({ title: 'Video Inserted', description: 'The video has been added to your post.' });
+  }
+
+  function handleInsertAudio(audioUrl: string) {
+    insertContent(`\n\n<audio controls>\n  <source src="${audioUrl}" type="audio/mpeg">\n  Your browser does not support the audio tag.\n</audio>\n\n`);
+    setIsMediaModalOpen(false);
+    toast({ title: 'Audio Inserted', description: 'The audio has been added to your post.' });
+  }
   
   function handleEmbedMedia(embedCode: string) {
     insertContent(`\n\n${embedCode}\n\n`);
@@ -521,6 +533,8 @@ export function PostForm({ post }: PostFormProps) {
         isOpen={isMediaModalOpen}
         onClose={() => setIsMediaModalOpen(false)}
         onInsertImage={handleInsertImage}
+        onInsertVideo={handleInsertVideo}
+        onInsertAudio={handleInsertAudio}
     />
     <EmbedMediaModal
         isOpen={isEmbedModalOpen}

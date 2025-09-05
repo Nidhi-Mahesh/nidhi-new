@@ -133,12 +133,28 @@ export function MediaClient() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {files.map((file) => (
                 <div key={file.path} className="group relative aspect-square">
-                  <Image
-                    src={file.url}
-                    alt={file.alt || file.name}
-                    fill
-                    className="rounded-lg object-cover"
-                  />
+                  {file.contentType.startsWith('video/') ? (
+                    <video
+                      src={file.url}
+                      className="rounded-lg object-cover w-full h-full"
+                      controls={false}
+                      muted
+                    />
+                  ) : file.contentType.startsWith('audio/') ? (
+                    <div className="flex items-center justify-center bg-muted rounded-lg w-full h-full">
+                      <div className="text-center">
+                        <div className="text-2xl mb-2">🎵</div>
+                        <div className="text-xs text-muted-foreground truncate px-2">{file.name}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <Image
+                      src={file.url}
+                      alt={file.alt || file.name}
+                      fill
+                      className="rounded-lg object-cover"
+                    />
+                  )}
                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg gap-2">
                       <Button
                         variant="outline"
@@ -148,15 +164,17 @@ export function MediaClient() {
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                       <Button
-                        variant="outline"
-                        size="icon"
-                        title="Generate Alt Text"
-                        disabled={isGeneratingAlt === file.path}
-                        onClick={() => handleGenerateAlt(file)}
-                      >
-                        {isGeneratingAlt === file.path ? <Loader2 className="h-4 w-4 animate-spin"/> : <Sparkles className="h-4 w-4" />}
-                      </Button>
+                       {file.contentType.startsWith('image/') && (
+                         <Button
+                           variant="outline"
+                           size="icon"
+                           title="Generate Alt Text"
+                           disabled={isGeneratingAlt === file.path}
+                           onClick={() => handleGenerateAlt(file)}
+                         >
+                           {isGeneratingAlt === file.path ? <Loader2 className="h-4 w-4 animate-spin"/> : <Sparkles className="h-4 w-4" />}
+                         </Button>
+                       )}
                     </div>
                     {file.alt && <div className="absolute bottom-1 left-1 bg-black/70 text-white text-[10px] p-1 rounded-sm">{file.alt}</div>}
                 </div>
@@ -165,7 +183,7 @@ export function MediaClient() {
           ) : (
             <div className="flex flex-col items-center justify-center text-center text-muted-foreground min-h-[300px] border-2 border-dashed rounded-lg">
                 <p className="font-bold mb-2">No media found.</p>
-                <p>Start by uploading your first image.</p>
+                <p>Start by uploading your first media file.</p>
             </div>
           )}
         </CardContent>
@@ -181,7 +199,7 @@ export function MediaClient() {
                     <Upload className="mr-2 h-4 w-4" /> Upload File
                 </label>
             </Button>
-            <Input id="file-upload" type="file" onChange={handleFileChange} className="hidden" disabled={isUploading} accept="image/*" />
+            <Input id="file-upload" type="file" onChange={handleFileChange} className="hidden" disabled={isUploading} accept="image/*,video/*,audio/*" />
         </>
     )
   }

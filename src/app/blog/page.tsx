@@ -17,6 +17,7 @@ import { Timestamp } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
 import 'katex/dist/katex.min.css'
 import { useAuth } from '@/context/auth-provider';
 import { Button } from '@/components/ui/button';
@@ -119,7 +120,7 @@ export default function BlogPage() {
                             </Link>
                             <ReactMarkdown
                               remarkPlugins={[remarkMath]}
-                              rehypePlugins={[rehypeKatex]}
+                              rehypePlugins={[rehypeRaw, rehypeKatex]}
                               components={{
                                     h1: ({node, ...props}) => <h2 className="text-3xl font-bold font-headline mt-8 mb-4" {...props} />,
                                     h2: ({node, ...props}) => <h3 className="text-2xl font-bold font-headline mt-6 mb-4" {...props} />,

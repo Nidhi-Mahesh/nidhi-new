@@ -124,7 +124,7 @@ export function MediaModal({ isOpen, onClose, onInsertImage, onInsertVideo, onIn
       <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Media Library</DialogTitle>
-          <DialogDescription>Select an image to insert or upload a new one.</DialogDescription>
+          <DialogDescription>Select media to insert or upload new images, videos, or audio files.</DialogDescription>
         </DialogHeader>
         
         <Tabs defaultValue="library" className="flex-grow flex flex-col min-h-0">
@@ -143,13 +143,39 @@ export function MediaModal({ isOpen, onClose, onInsertImage, onInsertVideo, onIn
                 ) : files.length > 0 ? (
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
                     {files.map((file) => (
-                      <div key={file.path} className="group relative aspect-square cursor-pointer" onClick={() => onInsertImage(file.url)}>
-                        <Image
-                          src={file.url}
-                          alt={file.name}
-                          fill
-                          className="rounded-lg object-cover"
-                        />
+                      <div key={file.path} className="group relative aspect-square cursor-pointer" onClick={() => {
+                        if (file.contentType.startsWith('image/')) {
+                          onInsertImage(file.url);
+                        } else if (file.contentType.startsWith('video/')) {
+                          onInsertVideo?.(file.url);
+                        } else if (file.contentType.startsWith('audio/')) {
+                          onInsertAudio?.(file.url);
+                        } else {
+                          onInsertImage(file.url);
+                        }
+                      }}>
+                        {file.contentType.startsWith('video/') ? (
+                          <video
+                            src={file.url}
+                            className="rounded-lg object-cover w-full h-full"
+                            controls={false}
+                            muted
+                          />
+                        ) : file.contentType.startsWith('audio/') ? (
+                          <div className="flex items-center justify-center bg-muted rounded-lg w-full h-full">
+                            <div className="text-center">
+                              <div className="text-2xl mb-1">🎵</div>
+                              <div className="text-xs text-muted-foreground truncate px-1">{file.name}</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <Image
+                            src={file.url}
+                            alt={file.name}
+                            fill
+                            className="rounded-lg object-cover"
+                          />
+                        )}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
                            <p className="text-white text-xs text-center p-1">Click to insert</p>
                         </div>
@@ -159,7 +185,7 @@ export function MediaModal({ isOpen, onClose, onInsertImage, onInsertVideo, onIn
                 ) : (
                    <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full">
                       <p className="font-bold mb-2">No media found.</p>
-                      <p>Switch to the "Upload New" tab to add images.</p>
+                      <p>Switch to the "Upload New" tab to add media files.</p>
                   </div>
                 )}
              </ScrollArea>
@@ -169,7 +195,16 @@ export function MediaModal({ isOpen, onClose, onInsertImage, onInsertVideo, onIn
                 {previewUrl && !isUploading ? (
                   <div className="w-full max-w-sm text-center">
                     <div className="relative mb-4">
-                      <Image src={previewUrl} alt="Preview" width={200} height={200} className="rounded-lg object-contain mx-auto" />
+                      {previewUrl.includes('blob:') ? (
+                        <div className="w-[200px] h-[200px] mx-auto rounded-lg bg-muted flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">📁</div>
+                            <div className="text-sm text-muted-foreground">Preview</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <Image src={previewUrl} alt="Preview" width={200} height={200} className="rounded-lg object-contain mx-auto" />
+                      )}
                       <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={clearPreview}><X className="h-4 w-4"/></Button>
                     </div>
                   </div>
@@ -182,14 +217,14 @@ export function MediaModal({ isOpen, onClose, onInsertImage, onInsertVideo, onIn
                 ) : (
                     <>
                         <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Upload an Image</h3>
-                        <p className="text-sm text-muted-foreground mb-4">Drag and drop a file or click to select.</p>
+                        <h3 className="text-lg font-semibold mb-2">Upload Media</h3>
+                        <p className="text-sm text-muted-foreground mb-4">Drag and drop an image, video, or audio file or click to select.</p>
                         <Button asChild>
                           <label htmlFor="modal-file-upload">
                               Choose File
                           </label>
                         </Button>
-                        <Input id="modal-file-upload" type="file" onChange={handleFileChange} className="hidden" accept="image/*" />
+                        <Input id="modal-file-upload" type="file" onChange={handleFileChange} className="hidden" accept="image/*,video/*,audio/*" />
                     </>
                 )}
              </div>
