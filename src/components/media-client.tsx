@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,23 +12,32 @@ import { useToast } from "@/hooks/use-toast";
 import { Progress } from '@/components/ui/progress';
 import { generateAltText } from '@/ai/flows/ai-generate-alt-text';
 
-export function MediaClient({ initialFiles }: { initialFiles: StorageFile[] }) {
-  const [files, setFiles] = useState<StorageFile[]>(initialFiles);
+export function MediaClient() {
+  const [files, setFiles] = useState<StorageFile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isGeneratingAlt, setIsGeneratingAlt] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
 
+  useEffect(() => {
+    fetchFiles();
+  }, []);
+
   async function fetchFiles() {
     try {
+      setIsLoading(true);
       const fetchedFiles = await getFiles();
       setFiles(fetchedFiles);
     } catch (error) {
+      console.error("Error fetching files:", error);
       toast({
         title: "Error",
-        description: "Failed to refresh media files.",
+        description: "Failed to load media files. This might be due to Firebase Storage configuration.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -115,7 +124,12 @@ export function MediaClient({ initialFiles }: { initialFiles: StorageFile[] }) {
           <CardDescription>Click on an image to copy its URL or generate AI alt text.</CardDescription>
         </CardHeader>
         <CardContent>
-          {files.length > 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground min-h-[300px]">
+              <Loader2 className="h-8 w-8 animate-spin mb-4" />
+              <p>Loading media files...</p>
+            </div>
+          ) : files.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {files.map((file) => (
                 <div key={file.path} className="group relative aspect-square">

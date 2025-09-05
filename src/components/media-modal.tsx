@@ -18,9 +18,11 @@ interface MediaModalProps {
   isOpen: boolean;
   onClose: () => void;
   onInsertImage: (url: string) => void;
+  onInsertVideo?: (url: string) => void;
+  onInsertAudio?: (url: string) => void;
 }
 
-export function MediaModal({ isOpen, onClose, onInsertImage }: MediaModalProps) {
+export function MediaModal({ isOpen, onClose, onInsertImage, onInsertVideo, onInsertAudio }: MediaModalProps) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -74,8 +76,19 @@ export function MediaModal({ isOpen, onClose, onInsertImage }: MediaModalProps) 
         setUploadProgress(progress);
       });
       
-      // Use the public URL to insert the image
-      onInsertImage(publicUrl);
+      // Determine file type and call appropriate handler
+      const fileType = file.type;
+      if (fileType.startsWith('image/')) {
+        onInsertImage(publicUrl);
+      } else if (fileType.startsWith('video/')) {
+        onInsertVideo?.(publicUrl);
+      } else if (fileType.startsWith('audio/')) {
+        onInsertAudio?.(publicUrl);
+      } else {
+        // Default to image for unknown types
+        onInsertImage(publicUrl);
+      }
+      
       toast({
         title: "Upload Successful",
         description: `File "${file.name}" has been uploaded and inserted.`
