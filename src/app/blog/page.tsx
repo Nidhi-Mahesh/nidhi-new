@@ -5,6 +5,8 @@ import Link from "next/link";
 import { getPosts, Post } from "@/services/posts";
 import { getUsers, UserProfile } from "@/services/users";
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -47,7 +49,7 @@ const serializePost = (post: Post): Post => ({
   updatedAt: post.updatedAt ? toDate(post.updatedAt).toISOString() : undefined,
 });
 
-// 🔍 Highlight matching text - Fixed to handle React.ReactNode
+// 🔍 Highlight matching text
 function highlightText(text: string, query: string): React.ReactNode {
   if (!query) return text;
   const regex = new RegExp(`(${query})`, 'gi');
@@ -61,7 +63,7 @@ export default function BlogPage() {
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState(""); 
-  const [savedPosts, setSavedPosts] = useState<string[]>([]); // ⭐ saved post IDs
+  const [savedPosts, setSavedPosts] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchPostsAndUsers = async () => {
@@ -72,7 +74,6 @@ export default function BlogPage() {
     };
     fetchPostsAndUsers();
 
-    // load saved posts from localStorage
     const saved = localStorage.getItem("savedPosts");
     if (saved) setSavedPosts(JSON.parse(saved));
   }, []);
@@ -89,7 +90,6 @@ export default function BlogPage() {
   };
 
   const publishedPosts = allPosts.filter(post => post.status === 'Published');
-
   const filteredPosts = publishedPosts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     post.content.toLowerCase().includes(searchQuery.toLowerCase())
@@ -140,12 +140,12 @@ export default function BlogPage() {
                               <div className="flex items-center justify-between mb-8">
                                 {/* Author Info */}
                                 <Link href={`/users/${authorProfile?.uid}`} className="flex items-center gap-4 group">
-                                    <Avatar className="h-16 w-16 border-2 border-transparent group-hover:border-primary transition-all">
-                                      <AvatarImage src={authorProfile?.photoURL || undefined} alt={authorProfile?.displayName || undefined} />
+                                    <Avatar className="h-16 w-16">
+                                      <AvatarImage src={authorProfile?.photoURL || undefined} />
                                       <AvatarFallback>{getInitials(authorProfile?.displayName)}</AvatarFallback>
                                     </Avatar>
                                     <div>
-                                      <p className="text-lg font-semibold group-hover:text-primary">{authorProfile?.displayName || 'Unknown Author'}</p>
+                                      <p className="text-lg font-semibold">{authorProfile?.displayName || 'Unknown Author'}</p>
                                       <p className="text-sm text-muted-foreground">Posted on {new Date(serializablePost.createdAt).toLocaleDateString()}</p>
                                     </div>
                                 </Link>
@@ -153,38 +153,37 @@ export default function BlogPage() {
                                 {/* ⭐ Save button */}
                                 <button
                                   onClick={() => toggleSavePost(post.id)}
-                                  className={`px-3 py-1 rounded-md text-sm font-medium ${isSaved ? 'bg-yellow-400 text-black' : 'bg-gray-200 text-gray-800'} hover:bg-yellow-300`}
+                                  className={`px-3 py-1 rounded-md text-sm font-medium ${isSaved ? 'bg-yellow-400 text-black' : 'bg-gray-200 text-gray-800'}`}
                                 >
                                   {isSaved ? "Saved ★" : "Save ☆"}
                                 </button>
                               </div>
 
-                              {/* Highlighted Title */}
+                              {/* Title */}
                               <Link href={`/blog/${post.id}`}>
                                 <h1 className="text-4xl font-bold font-headline mb-4">
                                   {highlightText(post.title, searchQuery)}
                                 </h1>
                               </Link>
 
-                              {/* Highlighted Markdown Content */}
+                              {/* Render Markdown with raw HTML support */}
                               <ReactMarkdown
                                 remarkPlugins={[remarkMath]}
-                                rehypePlugins={[rehypeKatex]}
+                                rehypePlugins={[rehypeKatex, rehypeRaw, rehypeSanitize]}
                                 components={{
-                                  p: ({node, children, ...props}) => (
-                                    <p className="mb-4 leading-relaxed" {...props}>
-                                      {highlightText(String(children || ''), searchQuery)}
-                                    </p>
+                                  img: ({src, alt}) => (
+                                    <img src={src || ''} alt={alt || ''} className="max-w-full h-auto rounded-lg shadow-md my-4" />
                                   ),
-                                  code(props) {
-                                    const {children, className, ...rest} = props;
+                                  video: ({node, ...props}) => (
+                                    <video controls className="w-full rounded-lg my-4">
+                                      <source src={props.src as string} type="video/mp4" />
+                                      Your browser does not support the video tag.
+                                    </video>
+                                  ),
+                                  code({children, className, ...rest}) {
                                     const match = /language-(\w+)/.exec(className || '');
                                     return match ? (
-                                      <SyntaxHighlighter
-                                        style={materialDark}
-                                        language={match[1]}
-                                        PreTag="div"
-                                      >
+                                      <SyntaxHighlighter style={materialDark} language={match[1]} PreTag="div">
                                         {String(children).replace(/\n$/, '')}
                                       </SyntaxHighlighter>
                                     ) : (
