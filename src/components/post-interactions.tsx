@@ -24,6 +24,10 @@ export function PostInteractions({ post: initialPost }: PostInteractionsProps) {
   const [isProcessing, setIsProcessing] = useState<null | 'like' | 'dislike'>(null);
 
   useEffect(() => {
+    setPost(initialPost);
+  }, [initialPost]);
+
+  useEffect(() => {
     if (!post.id) return;
     const postRef = doc(db, "posts", post.id);
     const unsubscribe = onSnapshot(postRef, (doc) => {
