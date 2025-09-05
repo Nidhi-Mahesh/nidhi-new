@@ -44,18 +44,20 @@ export default function Home() {
           <Logo />
           <h1 className="text-2xl font-bold font-headline">Modern Chyrp</h1>
         </Link>
-        <nav className="flex items-center gap-4">
-          <Button asChild variant="link">
-            <Link href="/blog">Blog</Link>
-          </Button>
-          <Button asChild variant="ghost">
-            <Link href="/login">Log In</Link>
-          </Button>
-          <Button asChild className="ml-2">
-            <Link href="/signup">Get Started</Link>
-          </Button>
-        </nav>
-        <ThemeToggle />
+        <div className="flex items-center gap-4">
+          <nav className="flex items-center gap-4">
+            <Button asChild variant="link">
+              <Link href="/blog">Blog</Link>
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href="/login">Log In</Link>
+            </Button>
+            <Button asChild className="ml-2">
+              <Link href="/signup">Get Started</Link>
+            </Button>
+          </nav>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="flex-grow">
@@ -173,7 +175,7 @@ export default function Home() {
       </main>
 
       {/* 5. Call-to-Action Footer */}
-      <footer className="py-20 lg:py-32 bg-gradient-to-r from-blue-600 to-teal-500 text-white text-center">
+      <footer className="py-20 lg:py-32 bg-background text-foreground text-center">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-5xl lg:text-6xl font-bold font-headline tracking-tight">
             Start Writing Smarter
@@ -182,10 +184,10 @@ export default function Home() {
             Join Modern Chyrp today and transform your blogging experience with powerful AI and a beautiful platform.
           </p>
           <div className="mt-10 flex justify-center gap-4">
-            <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100 hover:text-blue-700">
+            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Link href="/signup">Get Started Free</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-blue-600">
+            <Button asChild size="lg" variant="outline" className="border-foreground text-foreground hover:bg-accent hover:text-accent-foreground">
               <Link href="/how-it-works">See How It Works</Link>
             </Button>
           </div>

@@ -14,9 +14,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <SidebarInset>
         <div className="flex flex-col h-full">
           <DashboardHeader />
-          <div className="absolute top-4 right-4 z-50">
-            <ThemeToggle />
-          </div>
+          
           <main className="flex-1 overflow-y-auto">
             {children}
           </main>

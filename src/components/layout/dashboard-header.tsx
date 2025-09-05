@@ -18,6 +18,7 @@ import { SidebarTrigger } from "../ui/sidebar"
 import Image from "next/image"
 import { useAuth } from "@/context/auth-provider"
 import { useRouter } from "next/navigation"
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function DashboardHeader() {
   const { user, logout } = useAuth();
@@ -75,6 +76,7 @@ export function DashboardHeader() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <ThemeToggle />
     </header>
   )
 }
