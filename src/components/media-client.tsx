@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,23 +12,32 @@ import { useToast } from "@/hooks/use-toast";
 import { Progress } from '@/components/ui/progress';
 import { generateAltText } from '@/ai/flows/ai-generate-alt-text';
 
-export function MediaClient({ initialFiles }: { initialFiles: StorageFile[] }) {
-  const [files, setFiles] = useState<StorageFile[]>(initialFiles);
+export function MediaClient() {
+  const [files, setFiles] = useState<StorageFile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isGeneratingAlt, setIsGeneratingAlt] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
 
+  useEffect(() => {
+    fetchFiles();
+  }, []);
+
   async function fetchFiles() {
     try {
+      setIsLoading(true);
       const fetchedFiles = await getFiles();
       setFiles(fetchedFiles);
     } catch (error) {
+      console.error("Error fetching files:", error);
       toast({
         title: "Error",
-        description: "Failed to refresh media files.",
+        description: "Failed to load media files. This might be due to Firebase Storage configuration.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -115,16 +124,37 @@ export function MediaClient({ initialFiles }: { initialFiles: StorageFile[] }) {
           <CardDescription>Click on an image to copy its URL or generate AI alt text.</CardDescription>
         </CardHeader>
         <CardContent>
-          {files.length > 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground min-h-[300px]">
+              <Loader2 className="h-8 w-8 animate-spin mb-4" />
+              <p>Loading media files...</p>
+            </div>
+          ) : files.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {files.map((file) => (
                 <div key={file.path} className="group relative aspect-square">
-                  <Image
-                    src={file.url}
-                    alt={file.alt || file.name}
-                    fill
-                    className="rounded-lg object-cover"
-                  />
+                  {file.contentType.startsWith('video/') ? (
+                    <video
+                      src={file.url}
+                      className="rounded-lg object-cover w-full h-full"
+                      controls={false}
+                      muted
+                    />
+                  ) : file.contentType.startsWith('audio/') ? (
+                    <div className="flex items-center justify-center bg-muted rounded-lg w-full h-full">
+                      <div className="text-center">
+                        <div className="text-2xl mb-2">🎵</div>
+                        <div className="text-xs text-muted-foreground truncate px-2">{file.name}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <Image
+                      src={file.url}
+                      alt={file.alt || file.name}
+                      fill
+                      className="rounded-lg object-cover"
+                    />
+                  )}
                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg gap-2">
                       <Button
                         variant="outline"
@@ -134,15 +164,17 @@ export function MediaClient({ initialFiles }: { initialFiles: StorageFile[] }) {
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                       <Button
-                        variant="outline"
-                        size="icon"
-                        title="Generate Alt Text"
-                        disabled={isGeneratingAlt === file.path}
-                        onClick={() => handleGenerateAlt(file)}
-                      >
-                        {isGeneratingAlt === file.path ? <Loader2 className="h-4 w-4 animate-spin"/> : <Sparkles className="h-4 w-4" />}
-                      </Button>
+                       {file.contentType.startsWith('image/') && (
+                         <Button
+                           variant="outline"
+                           size="icon"
+                           title="Generate Alt Text"
+                           disabled={isGeneratingAlt === file.path}
+                           onClick={() => handleGenerateAlt(file)}
+                         >
+                           {isGeneratingAlt === file.path ? <Loader2 className="h-4 w-4 animate-spin"/> : <Sparkles className="h-4 w-4" />}
+                         </Button>
+                       )}
                     </div>
                     {file.alt && <div className="absolute bottom-1 left-1 bg-black/70 text-white text-[10px] p-1 rounded-sm">{file.alt}</div>}
                 </div>
@@ -151,7 +183,7 @@ export function MediaClient({ initialFiles }: { initialFiles: StorageFile[] }) {
           ) : (
             <div className="flex flex-col items-center justify-center text-center text-muted-foreground min-h-[300px] border-2 border-dashed rounded-lg">
                 <p className="font-bold mb-2">No media found.</p>
-                <p>Start by uploading your first image.</p>
+                <p>Start by uploading your first media file.</p>
             </div>
           )}
         </CardContent>
@@ -167,7 +199,7 @@ export function MediaClient({ initialFiles }: { initialFiles: StorageFile[] }) {
                     <Upload className="mr-2 h-4 w-4" /> Upload File
                 </label>
             </Button>
-            <Input id="file-upload" type="file" onChange={handleFileChange} className="hidden" disabled={isUploading} accept="image/*" />
+            <Input id="file-upload" type="file" onChange={handleFileChange} className="hidden" disabled={isUploading} accept="image/*,video/*,audio/*" />
         </>
     )
   }
