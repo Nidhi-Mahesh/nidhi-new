@@ -56,20 +56,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete your account? This action is irreversible."
-      )
-    ) {
-      // Implement account deletion logic here
-      toast({
-        title: "Account Deletion",
-        description: "Account deletion feature not yet implemented."
-      });
-    }
-  };
-
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -86,7 +72,6 @@ export default function SettingsPage() {
       <Tabs defaultValue="profile" className="space-y-4">
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
@@ -144,24 +129,6 @@ export default function SettingsPage() {
               </CardFooter>
             </Card>
           </form>
-        </TabsContent>
-
-        {/* Account Tab (Only Delete Account now) */}
-        <TabsContent value="account" className="space-y-4">
-          <Card className="border-destructive">
-            <CardHeader>
-              <CardTitle className="text-destructive">Delete Account</CardTitle>
-              <CardDescription>
-                Permanently delete your account and all of your content. This
-                action is not reversible.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button variant="destructive" onClick={handleDeleteAccount}>
-                Delete My Account
-              </Button>
-            </CardFooter>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>

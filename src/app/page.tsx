@@ -163,26 +163,6 @@ export default function Home() {
 
         
       </main>
-
-      {/* 5. Call-to-Action Footer */}
-      <footer className="py-20 lg:py-32 bg-background text-foreground text-center">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-5xl lg:text-6xl font-bold font-headline tracking-tight">
-            Start Writing Smarter
-          </h2>
-          <p className="mt-4 text-xl max-w-2xl mx-auto opacity-90">
-            Join Modern Chyrp today and transform your blogging experience with powerful AI and a beautiful platform.
-          </p>
-          <div className="mt-10 flex justify-center gap-4">
-            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href="/signup">Get Started Free</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-foreground text-foreground hover:bg-accent hover:text-accent-foreground">
-              <Link href="/how-it-works">See How It Works</Link>
-            </Button>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

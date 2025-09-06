@@ -7,7 +7,6 @@ import {
   Newspaper,
   Image as ImageIcon,
   Users,
-  Settings,
   BookOpen,
 } from "lucide-react"
 
@@ -31,11 +30,6 @@ const menuItems = [
   { href: "/posts", label: "Posts", icon: Newspaper, adminOnly: false },
   { href: "/media", label: "Media", icon: ImageIcon, adminOnly: false },
   { href: "/users", label: "Users", icon: Users, adminOnly: true },
-]
-
-// Removed Support
-const bottomMenuItems = [
-  { href: "/settings", label: "Settings", icon: Settings },
 ]
 
 export function DashboardSidebar() {
@@ -83,27 +77,8 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarSeparator />
-      <SidebarContent className="flex-none">
-        <SidebarMenu>
-          {bottomMenuItems.map((item) => (
-            <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith(item.href)}
-                tooltip={item.label}
-              >
-                <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-      <SidebarSeparator />
       <SidebarFooter>
-        <Link href="/settings" className="flex items-center gap-3 p-2">
+        <Link href="/profile" className="flex items-center gap-3 p-2">
           <Avatar>
             <AvatarImage src={user?.photoURL || undefined} alt="User avatar" />
             <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
