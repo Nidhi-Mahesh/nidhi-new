@@ -1,5 +1,5 @@
 # 📝 Modern Chyrp
-
+Website link- http://51.20.130.193:3000/
 A minimalist, **AI-powered blogging platform** built with **Next.js, Firebase, and Genkit AI**.
 Modern Chyrp offers a distraction-free writing and reading experience, customizable themes, and intelligent writing assistance for bloggers who value simplicity and creativity.
 
