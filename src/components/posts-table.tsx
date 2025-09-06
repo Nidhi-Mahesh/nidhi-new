@@ -130,7 +130,7 @@ export function PostsTable({ initialPosts, user }: { initialPosts: Post[], user:
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href={`/blog/${post.slug}`}>
+                        <Link href={`/blog/${post.id}`}>
                           <Eye className="mr-2 h-4 w-4" />
                           Preview
                         </Link>
