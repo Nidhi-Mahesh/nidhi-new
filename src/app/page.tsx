@@ -94,10 +94,7 @@ export default function Home() {
               </p>
             </div>
             <div className="md:w-1/2 flex justify-center">
-              {/* Placeholder for illustrative icon or vector */}
-              <div className="w-64 h-64 bg-blue-200 dark:bg-blue-800 rounded-lg flex items-center justify-center text-blue-800 dark:text-blue-200 text-6xl">
-                ✨
-              </div>
+              <img src="/ai.jpg" alt="AI that Understands Your Voice" className="max-w-full h-auto object-contain rounded-lg" />
             </div>
           </div>
         </section>
@@ -148,23 +145,16 @@ export default function Home() {
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Placeholder for Blog Mockup 1 */}
               <div className="group relative w-full h-64 bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105">
-                <img src="https://via.placeholder.com/400x250/F3F4F6/9CA3AF?text=Blog+Mockup+1" alt="Blog Mockup 1" className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-75" />
+                <img src="/blogmock1.jpg" alt="Blog Mockup 1" className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-75" />
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <p className="text-white text-xl font-semibold transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">Sample Post Title</p>
                 </div>
               </div>
               {/* Placeholder for Blog Mockup 2 */}
               <div className="group relative w-full h-64 bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105">
-                <img src="https://via.placeholder.com/400x250/E5E7EB/9CA3AF?text=Blog+Mockup+2" alt="Blog Mockup 2" className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-75" />
+                <img src="/blogmock2.jpg" alt="Blog Mockup 2" className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-75" />
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <p className="text-white text-xl font-semibold transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">Another Great Read</p>
-                </div>
-              </div>
-              {/* Placeholder for Blog Mockup 3 */}
-              <div className="group relative w-full h-64 bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105">
-                <img src="https://via.placeholder.com/400x250/D1D5DB/9CA3AF?text=Blog+Mockup+3" alt="Blog Mockup 3" className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-75" />
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-white text-xl font-semibold transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">Tips for Writers</p>
                 </div>
               </div>
             </div>

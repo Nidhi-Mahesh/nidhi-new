@@ -19,6 +19,9 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 import Link from 'next/link';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Palette } from 'lucide-react';
 
 // Helper to get initials from a name
 function getInitials(name: string | null | undefined) {
@@ -56,12 +59,48 @@ const serializePost = (post: Post): Post => {
   };
 };
 
+const themes = {
+  "default": {
+    background: "bg-background",
+    text: "text-foreground",
+    links: "text-primary",
+    accent: "text-primary",
+    fontStyle: "font-sans", // Added fontStyle for the main container
+  },
+  "sepia": {
+    background: "bg-[#F5ECD9]",
+    text: "text-[#3E2C1C]",
+    links: "text-[#3AAFA9]",
+    accent: "text-[#D98555]",
+    fontStyle: "font-serif", // Added fontStyle for the main container
+  },
+  "pastel": {
+    background: "bg-[#F6EDFF]",
+    text: "text-[#2E2E3A]",
+    links: "text-[#FF7BAC]",
+    accent: "text-[#A7F0BA]",
+    fontStyle: "font-serif", // Added fontStyle for the main container
+  },
+  "high-contrast": {
+    background: "bg-black",
+    text: "text-white",
+    links: "text-[#FFD600]",
+    accent: "text-[#00A2FF]",
+    fontStyle: "font-sans", // Added fontStyle for the main container
+  },
+};
+
+type ThemeKey = keyof typeof themes;
+
 export default function BlogPostPage() {
   const params = useParams();
   const { id } = params;
   const [post, setPost] = useState<Post | null>(null);
   const [author, setAuthor] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("default");
+
+  const currentTheme = themes[selectedTheme];
 
   useEffect(() => {
     if (typeof id === 'string') {
@@ -92,13 +131,30 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh-81px)] overflow-y-auto">
+    <div className={cn("relative w-full h-[calc(100vh-81px)] overflow-y-auto", currentTheme.background, currentTheme.text, currentTheme.fontStyle)}>
       <section className="h-full w-full flex items-center justify-center relative p-4 md:p-8">
         <div className="max-w-4xl w-full h-full flex flex-col items-center">
+          <div className="fixed bottom-4 right-4 z-50">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-1 text-gray-800 dark:text-gray-200">
+                  <Palette className="h-4 w-4" />
+                  <span>Themes</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {Object.keys(themes).map((themeKey) => (
+                  <DropdownMenuItem key={themeKey} onClick={() => setSelectedTheme(themeKey as ThemeKey)}>
+                    {themeKey.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <Card className="flex-grow h-full overflow-hidden w-full">
             <ScrollArea className="h-full">
               <CardContent className="p-6 md:p-8">
-                <div className="prose prose-lg dark:prose-invert max-w-none">
+                <div className={cn("prose prose-lg max-w-none", selectedTheme === "default" ? "dark:prose-invert" : "", currentTheme.links, currentTheme.accent, currentTheme.fontStyle)}>
                   <div className="flex items-center gap-4 mb-8">
                     {author && (
                       <Link href={`/users/${author.uid}`} className="flex items-center gap-4 group">
