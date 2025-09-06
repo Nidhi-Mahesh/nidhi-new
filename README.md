@@ -159,11 +159,20 @@ Modern Chyrp includes features that make blogging intuitive, powerful, and perso
 ## Screenshots / Demos
 
 -   **Landing Page:**
--   **Blog Listing Page:** (add image link)
--   **Post with Theme Switcher:** (add image link)
--   **AI Writing Features in Action:** (add screenshot or GIF)
+  <img width="1888" height="1174" alt="file_2025-09-06_08 04 03 1" src="https://github.com/user-attachments/assets/685c1cca-99db-4af3-9488-16b971eec8e4" />
 
-🎥 **Demo Video:** Add a demo video link (e.g., YouTube / Loom).
+-   **Blog Listing Page:** 
+   
+![blog1](https://github.com/user-attachments/assets/8e783226-f22e-4d00-ad02-b562617c73a8)
+
+![blog2](https://github.com/user-attachments/assets/affde636-e543-41f1-b600-0ff7db104c87)
+
+
+-   **AI Writing Features in Action:**
+   ![blog3](https://github.com/user-attachments/assets/751b2999-396c-4d6c-a8e9-28f36ec32169)
+
+
+🎥 **Demo Video:** (https://go.screenpal.com/watch/cTQ1I3noYRm)
 
 ## Contributing Guidelines
 
