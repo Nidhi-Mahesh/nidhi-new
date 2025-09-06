@@ -19,14 +19,26 @@ export interface Post {
   commentCount?: number;
   likes?: string[];
   dislikes?: string[];
+  slug?: string; // Added slug field
 }
 
 const postsCollection = collection(db, 'posts');
 
-export const createPost = async (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+// Helper to generate a URL-friendly slug
+const generateSlug = (title: string) => {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric characters except spaces and hyphens
+    .trim()
+    .replace(/\s+/g, '-'); // Replace spaces with hyphens
+};
+
+export const createPost = async (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'slug'>): Promise<string> => {
   try {
+    const slug = generateSlug(post.title);
     const data: any = {
       ...post,
+      slug,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       likeCount: 0,
@@ -108,13 +120,19 @@ export const getPost = async (id: string): Promise<Post | null> => {
 };
 
 
-export const updatePost = async (id: string, post: Partial<Omit<Post, 'id' | 'createdAt'>>): Promise<void> => {
+export const updatePost = async (id: string, post: Partial<Omit<Post, 'id' | 'createdAt' | 'slug'>>): Promise<void> => {
   try {
     const postDoc = doc(db, 'posts', id);
-    await updateDoc(postDoc, {
+    const updateData: any = {
       ...post,
       updatedAt: serverTimestamp(),
-    });
+    };
+
+    if (post.title) {
+      updateData.slug = generateSlug(post.title);
+    }
+
+    await updateDoc(postDoc, updateData);
     
     // Invalidate cache for this specific post and all posts
     await cache.delete(CacheKeys.posts.byId(id));
