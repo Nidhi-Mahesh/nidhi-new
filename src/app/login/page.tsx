@@ -25,10 +25,9 @@ type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, loginWithGoogle, user } = useAuth();
+  const { login, user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema)
@@ -52,21 +51,6 @@ export default function LoginPage() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    try {
-      await loginWithGoogle();
-    } catch (error: any) {
-       toast({
-        title: "Google Login Failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsGoogleLoading(false);
     }
   };
 
@@ -112,18 +96,6 @@ export default function LoginPage() {
               Log in
             </Button>
           </form>
-           <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-              </div>
-          </div>
-          <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isGoogleLoading}>
-            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.5 173.5 58.1l-65.2 65.2c-23.1-22.4-56.3-36.4-98.3-36.4-83.8 0-152.3 68.5-152.3 152.3s68.5 152.3 152.3 152.3c97.1 0 134.6-66.2 140.8-102.3H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>}
-            Login with Google
-          </Button>
           <div className="mt-4 text-center text-sm">
             Don't have an account?{" "}
             <Link href="/signup" className="underline">
