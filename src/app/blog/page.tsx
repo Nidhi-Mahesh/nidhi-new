@@ -21,6 +21,8 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { useAuth } from '@/context/auth-provider';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Palette } from 'lucide-react';
 
 function getInitials(name: string | null | undefined) {
   if (!name) return 'U';
@@ -49,6 +51,74 @@ const serializePost = (post: Post): Post => ({
   updatedAt: post.updatedAt ? toDate(post.updatedAt).toISOString() : undefined,
 });
 
+const themes = {
+  "default": {
+    background: "bg-background",
+    text: "text-foreground",
+    links: "text-primary",
+    accent: "text-primary",
+    fontStyle: "font-sans", // Default font
+  },
+  "sepia": {
+    background: "bg-[#E9DDC7]",
+    text: "text-[#2C1B12]",
+    links: "text-[#2E7D75]",
+    accent: "text-[#C96F44]",
+    fontStyle: "font-merriweather", // Custom font
+  },
+  "pastel": {
+    background: "bg-[#E6D5EC]",
+    text: "text-[#2B2B38]",
+    links: "text-[#E75A7C]",
+    accent: "text-[#88C999]",
+    fontStyle: "font-poppins", // Custom font
+  },
+  "high-contrast": {
+    background: "bg-[#0B0B0B]",
+    text: "text-[#FAFAFA]",
+    links: "text-[#FFC107]",
+    accent: "text-[#2196F3]",
+    fontStyle: "font-roboto-mono", // Custom font
+  },
+  "cosmic-noir": {
+    background: "bg-[#0D0C1D]",
+    text: "text-[#E6E6E6]",
+    links: "text-[#9A4DFF]",
+    accent: "text-[#00E5FF]",
+    fontStyle: "font-orbitron", // Custom font
+  },
+  "forest-whisper": {
+    background: "bg-[#1E2D24]",
+    text: "text-[#F1EEDC]",
+    links: "text-[#5FBF6C]",
+    accent: "text-[#D9A441]",
+    fontStyle: "font-lora", // Custom font
+  },
+  "mystic-twilight": {
+    background: "bg-[#1B1035]",
+    text: "text-[#F8F7FF]",
+    links: "text-[#7A3EFF]",
+    accent: "text-[#FF4FA3]",
+    fontStyle: "font-cinzel-decorative", // Custom font
+  },
+  "ocean-drift": {
+    background: "bg-[#0E3D45]",
+    text: "text-[#F2F9F9]",
+    links: "text-[#4DD0E1]",
+    accent: "text-[#FF8A65]",
+    fontStyle: "font-quicksand", // Custom font
+  },
+  "solar-ember": {
+    background: "bg-[#1C0A0A]",
+    text: "text-[#F9F6F2]",
+    links: "text-[#FF7043]",
+    accent: "text-[#FFD54F]",
+    fontStyle: "font-playfair-display", // Custom font
+  },
+};
+
+type ThemeKey = keyof typeof themes;
+
 // 🔍 Highlight matching text
 function highlightText(text: string, query: string): React.ReactNode {
   if (!query) return text;
@@ -64,6 +134,9 @@ export default function BlogPage() {
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState(""); 
   const [savedPosts, setSavedPosts] = useState<string[]>([]);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("default");
+
+  const currentTheme = themes[selectedTheme];
 
   useEffect(() => {
     const fetchPostsAndUsers = async () => {
@@ -98,7 +171,7 @@ export default function BlogPage() {
   const usersMap = new Map<string, UserProfile>(allUsers.map(u => [u.uid, u]));
 
   return (
-    <div className="relative w-full h-full">
+    <div className={cn("relative w-full h-full", currentTheme.background, currentTheme.text, currentTheme.fontStyle)}>
       { user &&
         <div className='flex justify-end p-5'>
           <Button asChild>
@@ -106,6 +179,25 @@ export default function BlogPage() {
           </Button>
         </div>
       }
+
+      {/* Theme selection button - moved to bottom right */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="flex items-center gap-1 text-gray-800 dark:text-gray-200">
+              <Palette className="h-4 w-4" />
+              <span>Themes</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {Object.keys(themes).map((themeKey) => (
+              <DropdownMenuItem key={themeKey} onClick={() => setSelectedTheme(themeKey as ThemeKey)}>
+                {themeKey.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       <div className="container mx-auto py-8">
         <div className="max-w-6xl mx-auto">
