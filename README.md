@@ -169,6 +169,7 @@ Modern Chyrp includes features that make blogging intuitive, powerful, and perso
 
 
 -   **AI Writing Features in Action:**
+  ---
    ![blog3](https://github.com/user-attachments/assets/751b2999-396c-4d6c-a8e9-28f36ec32169)
 
 
