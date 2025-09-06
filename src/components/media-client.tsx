@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, ChangeEvent, useEffect } from 'react';
+import { useState, ChangeEvent, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,10 +18,38 @@ export function MediaClient() {
   const [isGeneratingAlt, setIsGeneratingAlt] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
 
   useEffect(() => {
     fetchFiles();
   }, []);
+
+  useEffect(() => {
+    // Setup IntersectionObserver for videos
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.6 } // play only if 60% visible
+    );
+
+    videoRefs.current.forEach((video) => {
+      observer.observe(video);
+    });
+
+    return () => {
+      videoRefs.current.forEach((video) => {
+        observer.unobserve(video);
+      });
+    };
+  }, [files]);
 
   async function fetchFiles() {
     try {
@@ -135,10 +162,14 @@ export function MediaClient() {
                 <div key={file.path} className="group relative aspect-square">
                   {file.contentType.startsWith('video/') ? (
                     <video
+                      ref={(el) => {
+                        if (el) videoRefs.current.set(file.path, el);
+                      }}
                       src={file.url}
                       className="rounded-lg object-cover w-full h-full"
-                      controls={false}
+                      loop
                       muted
+                      playsInline
                     />
                   ) : file.contentType.startsWith('audio/') ? (
                     <div className="flex items-center justify-center bg-muted rounded-lg w-full h-full">
