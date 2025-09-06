@@ -6,8 +6,11 @@ Modern Chyrp offers a distraction-free writing and reading experience, customiza
 ---
 
 ## 🚀 Quick Links
+- [Prerequisites](#prerequisites)
 - [Tech Stack](#tech-stack)
 - [Installation](#installation)
+- [Firebase Configuration](#firebase-configuration)
+- [Database Setup](#database-setup)
 - [Usage Guide](#usage-guide)
 - [Features](#features)
 - [Screenshots / Demos](#screenshots--demos)
