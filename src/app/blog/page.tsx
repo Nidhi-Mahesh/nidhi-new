@@ -221,7 +221,7 @@ export default function BlogPage() {
 
               return (
                 <section key={post.id} className={`w-full flex items-center justify-center relative p-4 md:p-8 ${index < filteredPosts.length - 1 ? 'mb-16' : ''}`}>
-                  <div className="max-w-6xl w-full flex flex-col md:flex-row items-stretch gap-8 h-[85vh]">
+                  <div className="max-w-6xl w-full flex flex-col md:flex-row items-stretch gap-8">
                     
                     {/* Main Content */}
                     <div className="flex-grow overflow-hidden w-full md:w-2/3">
@@ -229,10 +229,10 @@ export default function BlogPage() {
                         <ScrollArea className="h-full">
                           <CardContent className="p-6 md:p-8">
                             <div className="prose prose-lg dark:prose-invert max-w-none">
-                              <div className="flex items-center justify-between mb-8">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                                 {/* Author Info */}
                                 <Link href={`/users/${authorProfile?.uid}`} className="flex items-center gap-4 group">
-                                    <Avatar className="h-16 w-16">
+                                    <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
                                       <AvatarImage src={authorProfile?.photoURL || undefined} />
                                       <AvatarFallback>{getInitials(authorProfile?.displayName)}</AvatarFallback>
                                     </Avatar>
@@ -253,7 +253,7 @@ export default function BlogPage() {
 
                               {/* Title */}
                               <Link href={`/blog/${post.id}`}>
-                                <h1 className="text-4xl font-bold font-headline mb-4">
+                                <h1 className="text-3xl sm:text-4xl font-bold font-headline mb-4">
                                   {highlightText(post.title, searchQuery)}
                                 </h1>
                               </Link>
