@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -10,7 +9,6 @@ import {
   Users,
   Settings,
   BookOpen,
-  LifeBuoy,
 } from "lucide-react"
 
 import {
@@ -26,18 +24,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import Logo from "../logo"
 import { useAuth } from "@/context/auth-provider"
 
+// Reordered: View Blog moved right below Dashboard
 const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home, adminOnly: false },
+  { href: "/blog", label: "View Blog", icon: BookOpen, adminOnly: false, target: "_blank" },
   { href: "/posts", label: "Posts", icon: Newspaper, adminOnly: false },
   { href: "/media", label: "Media", icon: ImageIcon, adminOnly: false },
   { href: "/users", label: "Users", icon: Users, adminOnly: true },
-  { href: "/blog", label: "View Blog", icon: BookOpen, adminOnly: false, target: "_blank" },
 ]
 
+// Removed Support
 const bottomMenuItems = [
-    { href: "/settings", label: "Settings", icon: Settings },
-    { href: "/support", label: "Support", icon: LifeBuoy },
-];
+  { href: "/settings", label: "Settings", icon: Settings },
+]
 
 export function DashboardSidebar() {
   const pathname = usePathname()
@@ -51,7 +50,6 @@ export function DashboardSidebar() {
     }
     return name[0];
   }
-
 
   return (
     <>
@@ -87,33 +85,33 @@ export function DashboardSidebar() {
       <SidebarSeparator />
       <SidebarContent className="flex-none">
         <SidebarMenu>
-            {bottomMenuItems.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                    asChild
-                    isActive={pathname.startsWith(item.href)}
-                    tooltip={item.label}
-                >
-                    <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                    </Link>
-                </SidebarMenuButton>
-                </SidebarMenuItem>
-            ))}
+          {bottomMenuItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith(item.href)}
+                tooltip={item.label}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarContent>
       <SidebarSeparator />
       <SidebarFooter>
         <Link href="/settings" className="flex items-center gap-3 p-2">
-            <Avatar>
-                <AvatarImage src={user?.photoURL || undefined} data-ai-hint="user avatar" alt="User avatar" />
-                <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
-            </Avatar>
-            <div className="overflow-hidden">
-                <p className="font-semibold truncate">{user?.displayName || "Anonymous"}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-            </div>
+          <Avatar>
+            <AvatarImage src={user?.photoURL || undefined} alt="User avatar" />
+            <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+          </Avatar>
+          <div className="overflow-hidden">
+            <p className="font-semibold truncate">{user?.displayName || "Anonymous"}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+          </div>
         </Link>
       </SidebarFooter>
     </>
