@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/logo";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
 import React, { useEffect, useRef, useState } from 'react';
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function Home() {
   const splineRef = useRef<HTMLDivElement | null>(null);
   const [isBookOpen, setIsBookOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,10 +44,10 @@ export default function Home() {
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
           <Logo />
-          <h1 className="text-2xl font-bold font-headline">Modern Chyrp</h1>
+          <h1 className="text-xl sm:text-2xl font-bold font-headline">Modern Chyrp</h1>
         </Link>
         <div className="flex items-center gap-4">
-          <nav className="flex items-center gap-4">
+          <nav className="hidden md:flex items-center gap-4">
             <Button asChild variant="link">
               <Link href="/blog">Blog</Link>
             </Button>
@@ -57,6 +59,20 @@ export default function Home() {
             </Button>
           </nav>
           <ThemeToggle />
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="outline" size="icon">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <nav className="flex flex-col gap-4 mt-8">
+                <Link href="/blog" className="text-lg" onClick={() => setIsMenuOpen(false)}>Blog</Link>
+                <Link href="/login" className="text-lg" onClick={() => setIsMenuOpen(false)}>Log In</Link>
+                <Link href="/signup" className="text-lg" onClick={() => setIsMenuOpen(false)}>Get Started</Link>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
@@ -64,7 +80,7 @@ export default function Home() {
         <section className="py-20 lg:py-40">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-10">
             <div className="md:w-1/2 text-center md:text-left">
-              <h2 className="text-5xl lg:text-7xl font-bold font-headline tracking-tight">
+              <h2 className="text-4xl sm:text-5xl lg:text-7xl font-bold font-headline tracking-tight">
                 Build Your Digital Voice
               </h2>
               <p className="mt-4 text-lg max-w-2xl mx-auto md:mx-0 text-muted-foreground">
@@ -88,7 +104,7 @@ export default function Home() {
         <section className="py-20 lg:py-32 bg-gray-50 dark:bg-gray-900">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-10">
             <div className="md:w-1/2 text-center md:text-left">
-              <h3 className="text-4xl font-bold font-headline">AI that Understands Your Voice</h3>
+              <h3 className="text-3xl sm:text-4xl font-bold font-headline">AI that Understands Your Voice</h3>
               <p className="mt-4 text-lg text-muted-foreground">
                 Our advanced AI goes beyond basic grammar checks. It understands your unique writing style, helps improve clarity, polishes grammar, and refines flow, all while preserving your authentic voice. Say goodbye to generic suggestions and hello to truly personalized writing assistance.
               </p>
@@ -102,7 +118,7 @@ export default function Home() {
         {/* 2. Key Features Grid */}
         <section className="py-20 lg:py-32">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h3 className="text-4xl font-bold font-headline">Key Features to Elevate Your Writing</h3>
+            <h3 className="text-3xl sm:text-4xl font-bold font-headline">Key Features to Elevate Your Writing</h3>
             <p className="mt-4 text-lg max-w-3xl mx-auto text-muted-foreground">
               Modern Chyrp provides a suite of powerful tools designed to streamline your content creation process.
             </p>
@@ -138,7 +154,7 @@ export default function Home() {
         {/* 3. Showcase Section */}
         <section className="py-20 lg:py-32 bg-gray-100 dark:bg-gray-800">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h3 className="text-4xl font-bold font-headline">See Modern Chyrp in Action</h3>
+            <h3 className="text-3xl sm:text-4xl font-bold font-headline">See Modern Chyrp in Action</h3>
             <p className="mt-4 text-lg max-w-3xl mx-auto text-muted-foreground">
               Explore beautiful blog layouts and engaging content created with Modern Chyrp.
             </p>
@@ -167,20 +183,14 @@ export default function Home() {
       {/* 5. Call-to-Action Footer */}
       <footer className="py-20 lg:py-32 bg-background text-foreground text-center">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-5xl lg:text-6xl font-bold font-headline tracking-tight">
-            Start Writing Smarter
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold font-headline tracking-tight">
+            contact us
           </h2>
-          <p className="mt-4 text-xl max-w-2xl mx-auto opacity-90">
-            Join Modern Chyrp today and transform your blogging experience with powerful AI and a beautiful platform.
+          <p className="mt-4 text-sm max-w-2xl mx-auto opacity-90">
+            phone no: 7789230989
+            <br />
+            email: adminmodernchyrp@gmail.com
           </p>
-          <div className="mt-10 flex justify-center gap-4">
-            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href="/signup">Get Started Free</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-foreground text-foreground hover:bg-accent hover:text-accent-foreground">
-              <Link href="/how-it-works">See How It Works</Link>
-            </Button>
-          </div>
         </div>
       </footer>
     </div>
