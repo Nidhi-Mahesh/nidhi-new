@@ -105,7 +105,6 @@ Modern Chyrp includes features that make blogging intuitive, powerful, and perso
 ## Screenshots / Demos
 
 -   **Landing Page:**
-  <img width="346" height="67" alt="image" src="https://github.com/user-attachments/assets/1d5bde5d-1e95-492c-bf73-644067f28cc6" />
 -   **Blog Listing Page:** (add image link)
 -   **Post with Theme Switcher:** (add image link)
 -   **AI Writing Features in Action:** (add screenshot or GIF)
